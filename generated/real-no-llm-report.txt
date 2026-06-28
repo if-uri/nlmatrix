@@ -1,0 +1,125 @@
+✗ anchor-3mon#00           zrób zrzut ekranu monitora, na którym jest chrome
+      - kind: expected result got needs-selection
+✗ anchor-3mon#01           screenshot tego monitora gdzie mam otwartego chrome
+      - kind: expected result got needs-selection
+✗ anchor-3mon#02           przechwyć ekran z przeglądarką chrome
+      - kind: expected result got needs-selection
+✗ anchor-3mon#03           zrzut monitora z chrome
+      - kind: expected result got needs-selection
+✗ anchor-3mon#04           zrób screena tego ekranu gdzie jest google chrome
+      - kind: expected result got needs-selection
+✗ anchor-3mon#05           capture the monitor showing chrome
+      - kind: expected result got needs-selection
+✗ anchor-3mon#06           pokaż zrzut ekranu z chrome
+      - kind: expected result got needs-selection
+✗ anchor-3mon#07           zrzutuj monitor na którym wyświetla się chrome
+      - kind: expected result got reject
+✗ anchor-3mon#08           zrób fotkę ekranu z otwartym chrome
+      - kind: expected result got needs-selection
+✗ anchor-relocate#00       zrób zrzut ekranu monitora, na którym jest chrome
+      - kind: expected result got needs-selection
+✗ anchor-relocate#01       screenshot tego monitora gdzie mam otwartego chrome
+      - kind: expected result got needs-selection
+✗ anchor-relocate#02       przechwyć ekran z przeglądarką chrome
+      - kind: expected result got needs-selection
+✗ anchor-relocate#03       zrzut monitora z chrome
+      - kind: expected result got needs-selection
+✗ anchor-relocate#04       zrób screena tego ekranu gdzie jest google chrome
+      - kind: expected result got needs-selection
+✗ anchor-relocate#05       capture the monitor showing chrome
+      - kind: expected result got needs-selection
+✗ anchor-relocate#06       pokaż zrzut ekranu z chrome
+      - kind: expected result got needs-selection
+✗ anchor-relocate#07       zrzutuj monitor na którym wyświetla się chrome
+      - kind: expected result got reject
+✗ anchor-relocate#08       zrób fotkę ekranu z otwartym chrome
+      - kind: expected result got needs-selection
+✗ sole-1mon#04             zrób screena
+      - kind: expected result got reject
+✗ explicit-2#02            przechwyć monitor numer 2
+      - kind: expected result got reject
+✗ explicit-2#03            zrzut ekranu 2
+      - kind: expected result got needs-selection
+✗ explicit-2#04            zrób screena monitora 2
+      - kind: expected result got reject
+✗ explicit-2#06            zrzutuj monitor 2
+      - kind: expected result got reject
+✗ explicit-2#07            capture monitor 2
+      - kind: expected result got needs-selection
+✗ explicit-2#08            ekran 2 zrzut
+      - kind: expected result got needs-selection
+✗ explicit-1#02            przechwyć monitor numer 1
+      - kind: expected result got reject
+✗ explicit-1#03            zrzut ekranu 1
+      - kind: expected result got needs-selection
+✗ explicit-1#04            zrób screena monitora 1
+      - kind: expected result got reject
+✗ explicit-1#06            zrzutuj monitor 1
+      - kind: expected result got reject
+✗ explicit-1#07            capture monitor 1
+      - kind: expected result got needs-selection
+✗ explicit-1#08            ekran 1 zrzut
+      - kind: expected result got needs-selection
+✗ scope-all#01             screenshot wszystkich ekranów
+      - kind: expected result got needs-selection
+✗ scope-all#02             przechwyć wszystkie monitory
+      - kind: expected result got reject
+✗ scope-all#03             zrzut całego pulpitu
+      - kind: expected result got needs-selection
+✗ scope-all#04             zrób screena wszystkich ekranów
+      - kind: expected result got needs-selection
+✗ scope-all#05             pokaż wszystkie monitory
+      - kind: expected result got reject
+✗ scope-all#06             zrzutuj cały desktop
+      - kind: expected result got reject
+✗ scope-all#07             capture all monitors
+      - kind: expected result got needs-selection
+✗ remembered-2#04          zrób screena
+      - kind: expected result got reject
+✗ fp-guard#04              zrób screena
+      - kind: expected needs-selection got reject
+✗ ambiguous#04             zrób screena
+      - kind: expected needs-selection got reject
+✗ oob-9#02                 przechwyć monitor numer 9
+      - reject: reason mismatch, want monitor-not-in-inventory, got ['planner-error']
+✗ oob-9#03                 zrzut ekranu 9
+      - kind: expected reject got needs-selection
+✗ oob-9#04                 zrób screena monitora 9
+      - reject: reason mismatch, want monitor-not-in-inventory, got ['planner-error']
+✗ oob-9#06                 zrzutuj monitor 9
+      - reject: reason mismatch, want monitor-not-in-inventory, got ['planner-error']
+✗ oob-9#07                 capture monitor 9
+      - kind: expected reject got needs-selection
+✗ oob-9#08                 ekran 9 zrzut
+      - kind: expected reject got needs-selection
+✗ anchor-closed#07         zrzutuj monitor na którym wyświetla się chrome
+      - kind: expected needs-selection got reject
+✗ conflict-all-plus-2#01   screenshot wszystkich ekranów
+      - kind: expected result got needs-selection
+✗ conflict-all-plus-2#02   przechwyć wszystkie monitory
+      - kind: expected result got reject
+✗ conflict-all-plus-2#03   zrzut całego pulpitu
+      - kind: expected result got needs-selection
+✗ conflict-all-plus-2#04   zrób screena wszystkich ekranów
+      - kind: expected result got needs-selection
+✗ conflict-all-plus-2#05   pokaż wszystkie monitory
+      - kind: expected result got reject
+✗ conflict-all-plus-2#06   zrzutuj cały desktop
+      - kind: expected result got reject
+✗ conflict-all-plus-2#07   capture all monitors
+      - kind: expected result got needs-selection
+
+Metamorphic family               pass/total
+  ✗ ambiguous                      8/9
+  ✗ conflict                       2/9
+  ✗ explicit                       6/18
+  ✗ no-anchor                      8/9
+  ✗ oob                            3/9
+  ✗ relocate                       0/9
+  ✗ remember                       8/9
+  ✗ remember/fp-guard              8/9
+  ✗ scope-all                      2/9
+  ✗ seed/paraphrase                0/9
+  ✗ shrink                         8/9
+
+RESULT: 53/108 NL cases satisfy all invariants

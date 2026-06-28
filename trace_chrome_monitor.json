@@ -1,0 +1,76 @@
+{
+  "ok": true,
+  "execute": true,
+  "prompt": "zrob zrzut jednego ekranu  monitora, na którym jest  przegladarka chrome",
+  "flow": {
+    "steps": [
+      {"id": "list_chrome_windows", "uri": "kvm://host/window/query/list",
+       "payload": {"app": "chrome"}, "depends_on": []},
+      {"id": "capture_chrome_monitor", "uri": "kvm://host/screen/query/capture",
+       "payload": {"monitor_from": "list_chrome_windows.result.value.selected.monitor"},
+       "depends_on": ["list_chrome_windows"]}
+    ]
+  },
+  "generator": {"cached": true, "fallback": false, "provider": "recall", "source": "episode"},
+  "selectedTargets": ["host"],
+  "routing": {
+    "accepted": true,
+    "blockedSteps": [],
+    "violations": [],
+    "steps": [
+      {"uri": "kvm://host/window/query/list", "ok": true, "effect": "query",
+       "route": {"safe": true, "meta": {"connector": "kvm", "label": "List open windows"}}},
+      {"uri": "kvm://host/screen/query/capture", "ok": true, "effect": "query",
+       "route": {"safe": true, "meta": {"connector": "kvm",
+         "contract": {"effect": "query", "reversible": false,
+           "domains": {"monitor": {"type": "enum", "domain": "env:monitors.id",
+             "preference": "screen.capture.default",
+             "skipWhen": {"scope": ["all", "all-monitors", "desktop"]}}}}}}}
+    ]
+  },
+  "results": {
+    "twin:drift:host": {"ok": true, "known": false, "skipped": "no-profile"},
+    "twin:inventory:host": {
+      "ok": true, "node": "host", "fingerprint": "env-301de3e353",
+      "monitors": [
+        {"id": 1, "connector": "HDMI-1", "primary": true},
+        {"id": 2, "connector": "DP-2", "primary": false},
+        {"id": 3, "connector": "DP-1", "primary": false}
+      ],
+      "domains": {
+        "env:monitors.id": [
+          {"value": 1, "label": "HDMI-1", "primary": true},
+          {"value": 2, "label": "DP-2", "primary": false},
+          {"value": 3, "label": "DP-1", "primary": false}
+        ],
+        "env:cdp_endpoints.id": [{"value": "127.0.0.1:9222", "label": "http://127.0.0.1:9222"}]
+      }
+    },
+    "list_chrome_windows": {
+      "ok": true, "invokedUri": "kvm://host/window/query/list",
+      "result": {
+        "connector": "kvm", "via": "atspi", "platform": "linux-wayland",
+        "selected": {"app": "Google Chrome", "monitor": 3, "monitorConnector": "DP-1",
+                     "role": "frame", "title": "Feed | LinkedIn - Google Chrome"},
+        "windows": [
+          {"app": "Google Chrome", "monitor": 3, "monitorConnector": "DP-1", "role": "frame"}
+        ]
+      }
+    },
+    "capture_chrome_monitor": {
+      "ok": true, "invokedUri": "kvm://host/screen/query/capture",
+      "result": {"connector": "kvm", "kind": "screenshot", "backend": "mutter",
+                 "monitor": 3, "outputConnector": "DP-1", "scope": "monitor",
+                 "width": 2560, "height": 1600, "fullSize": [2560, 1600],
+                 "path": "/home/tom/.urirun/artifacts/screenshots/urirun-kvm-shot-1493429.png"}
+    },
+    "memory:remember": {"ok": true, "remembered": true, "flowKey": "45a222f94959acc1"}
+  },
+  "timeline": [
+    {"id": "twin:drift:host", "ok": true, "reversible": true, "uri": "twin://host/env/query/drift"},
+    {"id": "twin:inventory:host", "ok": true, "reversible": true, "uri": "twin://host/env/query/inventory"},
+    {"id": "list_chrome_windows", "ok": true, "reversible": true, "uri": "kvm://host/window/query/list"},
+    {"id": "capture_chrome_monitor", "ok": true, "reversible": true, "uri": "kvm://host/screen/query/capture"},
+    {"id": "memory:remember", "ok": true, "reversible": false, "uri": "twin://host/memory/command/remember"}
+  ]
+}

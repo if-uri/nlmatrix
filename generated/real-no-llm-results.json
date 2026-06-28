@@ -1,0 +1,980 @@
+{
+  "total": 108,
+  "passed": 53,
+  "cases": [
+    {
+      "id": "anchor-3mon#00",
+      "mr": "seed/paraphrase",
+      "intent": "zr\u00f3b zrzut ekranu monitora, na kt\u00f3rym jest chrome",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got needs-selection"
+      ]
+    },
+    {
+      "id": "anchor-3mon#01",
+      "mr": "seed/paraphrase",
+      "intent": "screenshot tego monitora gdzie mam otwartego chrome",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got needs-selection"
+      ]
+    },
+    {
+      "id": "anchor-3mon#02",
+      "mr": "seed/paraphrase",
+      "intent": "przechwy\u0107 ekran z przegl\u0105dark\u0105 chrome",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got needs-selection"
+      ]
+    },
+    {
+      "id": "anchor-3mon#03",
+      "mr": "seed/paraphrase",
+      "intent": "zrzut monitora z chrome",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got needs-selection"
+      ]
+    },
+    {
+      "id": "anchor-3mon#04",
+      "mr": "seed/paraphrase",
+      "intent": "zr\u00f3b screena tego ekranu gdzie jest google chrome",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got needs-selection"
+      ]
+    },
+    {
+      "id": "anchor-3mon#05",
+      "mr": "seed/paraphrase",
+      "intent": "capture the monitor showing chrome",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got needs-selection"
+      ]
+    },
+    {
+      "id": "anchor-3mon#06",
+      "mr": "seed/paraphrase",
+      "intent": "poka\u017c zrzut ekranu z chrome",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got needs-selection"
+      ]
+    },
+    {
+      "id": "anchor-3mon#07",
+      "mr": "seed/paraphrase",
+      "intent": "zrzutuj monitor na kt\u00f3rym wy\u015bwietla si\u0119 chrome",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got reject"
+      ]
+    },
+    {
+      "id": "anchor-3mon#08",
+      "mr": "seed/paraphrase",
+      "intent": "zr\u00f3b fotk\u0119 ekranu z otwartym chrome",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got needs-selection"
+      ]
+    },
+    {
+      "id": "anchor-relocate#00",
+      "mr": "relocate",
+      "intent": "zr\u00f3b zrzut ekranu monitora, na kt\u00f3rym jest chrome",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got needs-selection"
+      ]
+    },
+    {
+      "id": "anchor-relocate#01",
+      "mr": "relocate",
+      "intent": "screenshot tego monitora gdzie mam otwartego chrome",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got needs-selection"
+      ]
+    },
+    {
+      "id": "anchor-relocate#02",
+      "mr": "relocate",
+      "intent": "przechwy\u0107 ekran z przegl\u0105dark\u0105 chrome",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got needs-selection"
+      ]
+    },
+    {
+      "id": "anchor-relocate#03",
+      "mr": "relocate",
+      "intent": "zrzut monitora z chrome",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got needs-selection"
+      ]
+    },
+    {
+      "id": "anchor-relocate#04",
+      "mr": "relocate",
+      "intent": "zr\u00f3b screena tego ekranu gdzie jest google chrome",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got needs-selection"
+      ]
+    },
+    {
+      "id": "anchor-relocate#05",
+      "mr": "relocate",
+      "intent": "capture the monitor showing chrome",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got needs-selection"
+      ]
+    },
+    {
+      "id": "anchor-relocate#06",
+      "mr": "relocate",
+      "intent": "poka\u017c zrzut ekranu z chrome",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got needs-selection"
+      ]
+    },
+    {
+      "id": "anchor-relocate#07",
+      "mr": "relocate",
+      "intent": "zrzutuj monitor na kt\u00f3rym wy\u015bwietla si\u0119 chrome",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got reject"
+      ]
+    },
+    {
+      "id": "anchor-relocate#08",
+      "mr": "relocate",
+      "intent": "zr\u00f3b fotk\u0119 ekranu z otwartym chrome",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got needs-selection"
+      ]
+    },
+    {
+      "id": "sole-1mon#00",
+      "mr": "shrink",
+      "intent": "zr\u00f3b zrzut ekranu",
+      "expect": "result",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "sole-1mon#01",
+      "mr": "shrink",
+      "intent": "zrzut ekranu",
+      "expect": "result",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "sole-1mon#02",
+      "mr": "shrink",
+      "intent": "screenshot",
+      "expect": "result",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "sole-1mon#03",
+      "mr": "shrink",
+      "intent": "przechwy\u0107 ekran",
+      "expect": "result",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "sole-1mon#04",
+      "mr": "shrink",
+      "intent": "zr\u00f3b screena",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got reject"
+      ]
+    },
+    {
+      "id": "sole-1mon#05",
+      "mr": "shrink",
+      "intent": "poka\u017c zrzut ekranu",
+      "expect": "result",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "sole-1mon#06",
+      "mr": "shrink",
+      "intent": "zrzutuj ekran",
+      "expect": "result",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "sole-1mon#07",
+      "mr": "shrink",
+      "intent": "zr\u00f3b print screen",
+      "expect": "result",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "sole-1mon#08",
+      "mr": "shrink",
+      "intent": "capture the screen",
+      "expect": "result",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "explicit-2#00",
+      "mr": "explicit",
+      "intent": "zr\u00f3b zrzut monitora 2",
+      "expect": "result",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "explicit-2#01",
+      "mr": "explicit",
+      "intent": "screenshot monitora 2",
+      "expect": "result",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "explicit-2#02",
+      "mr": "explicit",
+      "intent": "przechwy\u0107 monitor numer 2",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got reject"
+      ]
+    },
+    {
+      "id": "explicit-2#03",
+      "mr": "explicit",
+      "intent": "zrzut ekranu 2",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got needs-selection"
+      ]
+    },
+    {
+      "id": "explicit-2#04",
+      "mr": "explicit",
+      "intent": "zr\u00f3b screena monitora 2",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got reject"
+      ]
+    },
+    {
+      "id": "explicit-2#05",
+      "mr": "explicit",
+      "intent": "poka\u017c zrzut monitora 2",
+      "expect": "result",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "explicit-2#06",
+      "mr": "explicit",
+      "intent": "zrzutuj monitor 2",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got reject"
+      ]
+    },
+    {
+      "id": "explicit-2#07",
+      "mr": "explicit",
+      "intent": "capture monitor 2",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got needs-selection"
+      ]
+    },
+    {
+      "id": "explicit-2#08",
+      "mr": "explicit",
+      "intent": "ekran 2 zrzut",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got needs-selection"
+      ]
+    },
+    {
+      "id": "explicit-1#00",
+      "mr": "explicit",
+      "intent": "zr\u00f3b zrzut monitora 1",
+      "expect": "result",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "explicit-1#01",
+      "mr": "explicit",
+      "intent": "screenshot monitora 1",
+      "expect": "result",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "explicit-1#02",
+      "mr": "explicit",
+      "intent": "przechwy\u0107 monitor numer 1",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got reject"
+      ]
+    },
+    {
+      "id": "explicit-1#03",
+      "mr": "explicit",
+      "intent": "zrzut ekranu 1",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got needs-selection"
+      ]
+    },
+    {
+      "id": "explicit-1#04",
+      "mr": "explicit",
+      "intent": "zr\u00f3b screena monitora 1",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got reject"
+      ]
+    },
+    {
+      "id": "explicit-1#05",
+      "mr": "explicit",
+      "intent": "poka\u017c zrzut monitora 1",
+      "expect": "result",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "explicit-1#06",
+      "mr": "explicit",
+      "intent": "zrzutuj monitor 1",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got reject"
+      ]
+    },
+    {
+      "id": "explicit-1#07",
+      "mr": "explicit",
+      "intent": "capture monitor 1",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got needs-selection"
+      ]
+    },
+    {
+      "id": "explicit-1#08",
+      "mr": "explicit",
+      "intent": "ekran 1 zrzut",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got needs-selection"
+      ]
+    },
+    {
+      "id": "scope-all#00",
+      "mr": "scope-all",
+      "intent": "zr\u00f3b zrzut wszystkich monitor\u00f3w",
+      "expect": "result",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "scope-all#01",
+      "mr": "scope-all",
+      "intent": "screenshot wszystkich ekran\u00f3w",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got needs-selection"
+      ]
+    },
+    {
+      "id": "scope-all#02",
+      "mr": "scope-all",
+      "intent": "przechwy\u0107 wszystkie monitory",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got reject"
+      ]
+    },
+    {
+      "id": "scope-all#03",
+      "mr": "scope-all",
+      "intent": "zrzut ca\u0142ego pulpitu",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got needs-selection"
+      ]
+    },
+    {
+      "id": "scope-all#04",
+      "mr": "scope-all",
+      "intent": "zr\u00f3b screena wszystkich ekran\u00f3w",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got needs-selection"
+      ]
+    },
+    {
+      "id": "scope-all#05",
+      "mr": "scope-all",
+      "intent": "poka\u017c wszystkie monitory",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got reject"
+      ]
+    },
+    {
+      "id": "scope-all#06",
+      "mr": "scope-all",
+      "intent": "zrzutuj ca\u0142y desktop",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got reject"
+      ]
+    },
+    {
+      "id": "scope-all#07",
+      "mr": "scope-all",
+      "intent": "capture all monitors",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got needs-selection"
+      ]
+    },
+    {
+      "id": "scope-all#08",
+      "mr": "scope-all",
+      "intent": "wszystkie ekrany zrzut",
+      "expect": "result",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "remembered-2#00",
+      "mr": "remember",
+      "intent": "zr\u00f3b zrzut ekranu",
+      "expect": "result",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "remembered-2#01",
+      "mr": "remember",
+      "intent": "zrzut ekranu",
+      "expect": "result",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "remembered-2#02",
+      "mr": "remember",
+      "intent": "screenshot",
+      "expect": "result",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "remembered-2#03",
+      "mr": "remember",
+      "intent": "przechwy\u0107 ekran",
+      "expect": "result",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "remembered-2#04",
+      "mr": "remember",
+      "intent": "zr\u00f3b screena",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got reject"
+      ]
+    },
+    {
+      "id": "remembered-2#05",
+      "mr": "remember",
+      "intent": "poka\u017c zrzut ekranu",
+      "expect": "result",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "remembered-2#06",
+      "mr": "remember",
+      "intent": "zrzutuj ekran",
+      "expect": "result",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "remembered-2#07",
+      "mr": "remember",
+      "intent": "zr\u00f3b print screen",
+      "expect": "result",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "remembered-2#08",
+      "mr": "remember",
+      "intent": "capture the screen",
+      "expect": "result",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "fp-guard#00",
+      "mr": "remember/fp-guard",
+      "intent": "zr\u00f3b zrzut ekranu",
+      "expect": "needs-selection",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "fp-guard#01",
+      "mr": "remember/fp-guard",
+      "intent": "zrzut ekranu",
+      "expect": "needs-selection",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "fp-guard#02",
+      "mr": "remember/fp-guard",
+      "intent": "screenshot",
+      "expect": "needs-selection",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "fp-guard#03",
+      "mr": "remember/fp-guard",
+      "intent": "przechwy\u0107 ekran",
+      "expect": "needs-selection",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "fp-guard#04",
+      "mr": "remember/fp-guard",
+      "intent": "zr\u00f3b screena",
+      "expect": "needs-selection",
+      "ok": false,
+      "violations": [
+        "kind: expected needs-selection got reject"
+      ]
+    },
+    {
+      "id": "fp-guard#05",
+      "mr": "remember/fp-guard",
+      "intent": "poka\u017c zrzut ekranu",
+      "expect": "needs-selection",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "fp-guard#06",
+      "mr": "remember/fp-guard",
+      "intent": "zrzutuj ekran",
+      "expect": "needs-selection",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "fp-guard#07",
+      "mr": "remember/fp-guard",
+      "intent": "zr\u00f3b print screen",
+      "expect": "needs-selection",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "fp-guard#08",
+      "mr": "remember/fp-guard",
+      "intent": "capture the screen",
+      "expect": "needs-selection",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "ambiguous#00",
+      "mr": "ambiguous",
+      "intent": "zr\u00f3b zrzut ekranu",
+      "expect": "needs-selection",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "ambiguous#01",
+      "mr": "ambiguous",
+      "intent": "zrzut ekranu",
+      "expect": "needs-selection",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "ambiguous#02",
+      "mr": "ambiguous",
+      "intent": "screenshot",
+      "expect": "needs-selection",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "ambiguous#03",
+      "mr": "ambiguous",
+      "intent": "przechwy\u0107 ekran",
+      "expect": "needs-selection",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "ambiguous#04",
+      "mr": "ambiguous",
+      "intent": "zr\u00f3b screena",
+      "expect": "needs-selection",
+      "ok": false,
+      "violations": [
+        "kind: expected needs-selection got reject"
+      ]
+    },
+    {
+      "id": "ambiguous#05",
+      "mr": "ambiguous",
+      "intent": "poka\u017c zrzut ekranu",
+      "expect": "needs-selection",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "ambiguous#06",
+      "mr": "ambiguous",
+      "intent": "zrzutuj ekran",
+      "expect": "needs-selection",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "ambiguous#07",
+      "mr": "ambiguous",
+      "intent": "zr\u00f3b print screen",
+      "expect": "needs-selection",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "ambiguous#08",
+      "mr": "ambiguous",
+      "intent": "capture the screen",
+      "expect": "needs-selection",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "oob-9#00",
+      "mr": "oob",
+      "intent": "zr\u00f3b zrzut monitora 9",
+      "expect": "reject",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "oob-9#01",
+      "mr": "oob",
+      "intent": "screenshot monitora 9",
+      "expect": "reject",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "oob-9#02",
+      "mr": "oob",
+      "intent": "przechwy\u0107 monitor numer 9",
+      "expect": "reject",
+      "ok": false,
+      "violations": [
+        "reject: reason mismatch, want monitor-not-in-inventory, got ['planner-error']"
+      ]
+    },
+    {
+      "id": "oob-9#03",
+      "mr": "oob",
+      "intent": "zrzut ekranu 9",
+      "expect": "reject",
+      "ok": false,
+      "violations": [
+        "kind: expected reject got needs-selection"
+      ]
+    },
+    {
+      "id": "oob-9#04",
+      "mr": "oob",
+      "intent": "zr\u00f3b screena monitora 9",
+      "expect": "reject",
+      "ok": false,
+      "violations": [
+        "reject: reason mismatch, want monitor-not-in-inventory, got ['planner-error']"
+      ]
+    },
+    {
+      "id": "oob-9#05",
+      "mr": "oob",
+      "intent": "poka\u017c zrzut monitora 9",
+      "expect": "reject",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "oob-9#06",
+      "mr": "oob",
+      "intent": "zrzutuj monitor 9",
+      "expect": "reject",
+      "ok": false,
+      "violations": [
+        "reject: reason mismatch, want monitor-not-in-inventory, got ['planner-error']"
+      ]
+    },
+    {
+      "id": "oob-9#07",
+      "mr": "oob",
+      "intent": "capture monitor 9",
+      "expect": "reject",
+      "ok": false,
+      "violations": [
+        "kind: expected reject got needs-selection"
+      ]
+    },
+    {
+      "id": "oob-9#08",
+      "mr": "oob",
+      "intent": "ekran 9 zrzut",
+      "expect": "reject",
+      "ok": false,
+      "violations": [
+        "kind: expected reject got needs-selection"
+      ]
+    },
+    {
+      "id": "anchor-closed#00",
+      "mr": "no-anchor",
+      "intent": "zr\u00f3b zrzut ekranu monitora, na kt\u00f3rym jest chrome",
+      "expect": "needs-selection",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "anchor-closed#01",
+      "mr": "no-anchor",
+      "intent": "screenshot tego monitora gdzie mam otwartego chrome",
+      "expect": "needs-selection",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "anchor-closed#02",
+      "mr": "no-anchor",
+      "intent": "przechwy\u0107 ekran z przegl\u0105dark\u0105 chrome",
+      "expect": "needs-selection",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "anchor-closed#03",
+      "mr": "no-anchor",
+      "intent": "zrzut monitora z chrome",
+      "expect": "needs-selection",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "anchor-closed#04",
+      "mr": "no-anchor",
+      "intent": "zr\u00f3b screena tego ekranu gdzie jest google chrome",
+      "expect": "needs-selection",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "anchor-closed#05",
+      "mr": "no-anchor",
+      "intent": "capture the monitor showing chrome",
+      "expect": "needs-selection",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "anchor-closed#06",
+      "mr": "no-anchor",
+      "intent": "poka\u017c zrzut ekranu z chrome",
+      "expect": "needs-selection",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "anchor-closed#07",
+      "mr": "no-anchor",
+      "intent": "zrzutuj monitor na kt\u00f3rym wy\u015bwietla si\u0119 chrome",
+      "expect": "needs-selection",
+      "ok": false,
+      "violations": [
+        "kind: expected needs-selection got reject"
+      ]
+    },
+    {
+      "id": "anchor-closed#08",
+      "mr": "no-anchor",
+      "intent": "zr\u00f3b fotk\u0119 ekranu z otwartym chrome",
+      "expect": "needs-selection",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "conflict-all-plus-2#00",
+      "mr": "conflict",
+      "intent": "zr\u00f3b zrzut wszystkich monitor\u00f3w",
+      "expect": "result",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "id": "conflict-all-plus-2#01",
+      "mr": "conflict",
+      "intent": "screenshot wszystkich ekran\u00f3w",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got needs-selection"
+      ]
+    },
+    {
+      "id": "conflict-all-plus-2#02",
+      "mr": "conflict",
+      "intent": "przechwy\u0107 wszystkie monitory",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got reject"
+      ]
+    },
+    {
+      "id": "conflict-all-plus-2#03",
+      "mr": "conflict",
+      "intent": "zrzut ca\u0142ego pulpitu",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got needs-selection"
+      ]
+    },
+    {
+      "id": "conflict-all-plus-2#04",
+      "mr": "conflict",
+      "intent": "zr\u00f3b screena wszystkich ekran\u00f3w",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got needs-selection"
+      ]
+    },
+    {
+      "id": "conflict-all-plus-2#05",
+      "mr": "conflict",
+      "intent": "poka\u017c wszystkie monitory",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got reject"
+      ]
+    },
+    {
+      "id": "conflict-all-plus-2#06",
+      "mr": "conflict",
+      "intent": "zrzutuj ca\u0142y desktop",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got reject"
+      ]
+    },
+    {
+      "id": "conflict-all-plus-2#07",
+      "mr": "conflict",
+      "intent": "capture all monitors",
+      "expect": "result",
+      "ok": false,
+      "violations": [
+        "kind: expected result got needs-selection"
+      ]
+    },
+    {
+      "id": "conflict-all-plus-2#08",
+      "mr": "conflict",
+      "intent": "wszystkie ekrany zrzut",
+      "expect": "result",
+      "ok": true,
+      "violations": []
+    }
+  ]
+}
