@@ -1,0 +1,7 @@
+✓ [000] needs-selection needs-selection (choose)                       zrób zrzut ekranu monitora, na którym jest chrome
+✓ [001] needs-selection needs-selection (choose)                       screenshot tego monitora gdzie mam otwartego chrome
+✓ [002] needs-selection needs-selection (choose)                       przechwyć ekran z przeglądarką chrome
+✓ [003] needs-selection needs-selection (choose)                       zrzut monitora z chrome
+✓ [004] needs-selection needs-selection (choose)                       zrób screena tego ekranu gdzie jest google chrome
+
+RESULT: 5/5 prompts satisfy all live invariants (execute=0)
