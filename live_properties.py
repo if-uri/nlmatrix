@@ -105,7 +105,7 @@ def expected_from_prompt(prompt_meta, adapted) -> list[str]:
         if n in ids:
             if cap and cap.get("monitor") != n:
                 v.append(f"explicit: asked monitor {n}, captured {cap.get('monitor')}")
-        elif n is not None and k not in ("reject", "needs-selection"):
+        elif ids and n is not None and k not in ("reject", "needs-selection"):
             v.append(f"explicit: monitor {n} not in inventory {ids} but kind={k} "
                      f"(expected reject/needs-selection)")
     elif phr == "all" and cap:

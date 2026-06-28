@@ -62,10 +62,17 @@ def prompt_corpus(args) -> list[dict]:
     return uniq
 
 
-def build_body(prompt: str, targets: list[str], execute: int, discovery: str) -> dict:
+def build_body(prompt: str, targets: list[str], execute: int, discovery: str,
+               no_llm: bool = False) -> dict:
     """The chat POST body. VERIFY this against a real submit — field names may
     differ in your build (e.g. 'selectedTargets' vs 'targets')."""
-    body = {"prompt": prompt, "targets": targets, "execute": bool(execute), "action": "chat:run"}
+    body = {
+        "prompt": prompt,
+        "targets": targets,
+        "execute": bool(execute),
+        "action": "chat:run",
+        "no_llm": bool(no_llm),
+    }
     if discovery:
         body["discovery"] = discovery
     return body
@@ -87,6 +94,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--targets", default="host")
     ap.add_argument("--discovery", default="node:lenovo")
     ap.add_argument("--execute", type=int, default=0, help="0=plan+route only, 1=run side effects")
+    ap.add_argument("--no-llm", action="store_true", help="send no_llm=true to the chat API")
     ap.add_argument("--delay", type=float, default=0.3, help="throttle between prompts (s)")
     ap.add_argument("--timeout", type=float, default=60.0)
     ap.add_argument("--limit", type=int, default=None)
@@ -103,7 +111,7 @@ def main(argv: list[str] | None = None) -> int:
     url = args.base.rstrip("/") + args.endpoint
 
     if args.show_request:
-        body = build_body(cases[0]["intent"], targets, args.execute, args.discovery)
+        body = build_body(cases[0]["intent"], targets, args.execute, args.discovery, args.no_llm)
         print("POST", url)
         print(json.dumps(body, ensure_ascii=False, indent=2))
         print(f"\n# {len(cases)} prompts queued. Verify path+body against one real "
@@ -112,7 +120,7 @@ def main(argv: list[str] | None = None) -> int:
 
     results, passed = [], 0
     for i, c in enumerate(cases):
-        body = build_body(c["intent"], targets, args.execute, args.discovery)
+        body = build_body(c["intent"], targets, args.execute, args.discovery, args.no_llm)
         try:
             envelope = post_json(url, body, args.timeout)
         except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, ValueError) as e:

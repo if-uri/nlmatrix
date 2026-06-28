@@ -1,0 +1,2 @@
+✓ [000] result         monitor=3 · output=DP-1 · scope=monitor · 2560x1600 zrób zrzut ekranu monitora, na którym jest chrome
+✓ [001] result         monitor=3 · output=DP-1 · scope=monitor · 2560x1600 screenshot tego monitora gdzie mam otwartego chrome
