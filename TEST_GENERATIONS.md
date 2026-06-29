@@ -22,11 +22,12 @@ bada prawdziwy system. Zweryfikowane warianty zasilają indeks z
 [EXPERIENCE_RETRIEVAL.md](EXPERIENCE_RETRIEVAL.md) jako known-good epizody.
 
 Gen 1 (rozwiązanie env-enum dla zrzutu) i jej żywy harness są zrobione. Poniżej
-Gen 2–Gen 10, rosnąco wg głębi wnioskowania. **Gen 2–10 są dostarczone jako
+Gen 2–Gen 11, rosnąco wg głębi wnioskowania. **Gen 2–11 są dostarczone jako
 działające przykłady** (`gen2_data_flow.py`, `gen3_reversible.py`,
 `gen4_state_router.py`, `gen5_cross_target.py`, `gen6_recall_adaptation.py`,
 `gen7_effect_honesty.py`, `gen8_verification.py`, `gen9_preference_memory.py`,
-`gen10_idempotence.py`) — każda z mutantem i asercją, że niezmiennik go łapie.
+`gen10_idempotence.py`, `gen11_capability_acquisition.py`) — każda z mutantem i
+asercją, że niezmiennik go łapie.
 
 ## Drabina
 
@@ -41,8 +42,18 @@ działające przykłady** (`gen2_data_flow.py`, `gen3_reversible.py`,
 | **8 · uczciwość weryfikacji** ✅ | „`ok:true` na kroku == zadanie zrobione" | dowolne zadanie z `verify(state)` | wstrzyknij awarię kroku; krok zwraca `ok:true` bez realnego efektu (phantom); cel weryfikacji nieobecny | `verify(state)` False ⟹ wynik **nie** „done"; awaria → recovery nextIntent albo rollback, nie cichy stop; phantom-success złapany przez weryfikację | `contracts.flow_execution_verification`, `decision_loop.general_path_next_intent`, `urifix_bridge.try_urifix_repair` |
 | **9 · selekcja→pamięć→auto-run** ✅ | „preferencja globalna (nie per-fingerprint) ALBO pytana za każdym razem" | dwuznaczny zrzut | dwuznaczny → odpowiedź → powtórz przy tym fp (auto) → powtórz przy innym fp (znów pyta) → drift unieważnia | zapamiętana preferencja działa **tylko** przy zgodnym fingerprincie; auto-run po remember; ponowne pytanie po drifcie; brak przecieku | `remember_preference/recall_preference/_preference_key`, rodzina human-task w dashboard, `environment_fingerprint` |
 | **10 · idempotencja** ✅ | „powtórzenie wykonuje na ślepo ponownie" | mutująca op + query op | uruchom dwa razy; przez przycisk repeat; współbieżnie | powtórzenie query → ten sam wynik, zero dodatkowej mutacji; powtórzenie mutacji → guard idempotencji/recall, nie podwójny efekt; `remember` odpala raz | `repeatChatMessage`, `twin://host/memory/command/remember`, idempotencja tras command |
+| **11 · capability acquisition** ✅ | „samorozszerzenie omija bramę" | eksport SVG→PNG z brakującym konektorem `img` i aplikacją `inkscape` | luka odzyskiwalna → wygeneruj/zainstaluj konektor; app nieodzyskiwalna → typed need; kłamliwy kontrakt → gate block; resume/rerun | wygenerowany kontrakt przechodzi tę samą admisję co ręczny; brak zdolności daje typed need, nie sukces; recovery wznawia, nie restartuje mutacji | `preconditions.ensure`, `request_capability`, `connector_scaffold`, contract gate, `contract_reversible` |
 
-## Najgłębsze trzy (dlaczego obalają architekturę)
+## Najgłębsze cztery (dlaczego obalają architekturę)
+
+**Gen 11 — samorozszerzenie pod bramą.** To jest test tezy „robot może
+rozszerzyć przestrzeń akcji, ale nie może rozszerzyć sobie uprawnień poza
+kontraktem". Wadliwa architektura trafia na brak konektora/aplikacji i albo
+udaje sukces, albo instaluje wygenerowany konektor bez admisji, albo przy
+recovery restartuje cały flow. Generacja wymusza: typed need przy luce
+nieodzyskiwalnej, ta sama brama admisji dla wygenerowanego kontraktu, oraz resume
+od miejsca blokady bez ponawiania mutacji. Jeśli pada — samorozszerzenie jest
+obejściem kernela, nie autonomią.
 
 **Gen 4 — router jako funkcja stanu.** To jest test tezy „router = czysta funkcja
 `plan(intent, twin_state, action_space)`". Twój własny ślad dowodzi, że ta sama
@@ -106,7 +117,7 @@ go wykrywa.
   czyta realny mesh, framuje intent po każdym targecie i stosuje TEN SAM
   `gen5_cross_target.check` na żywym HTTP (`execute=0`, read-only). 5/5 na żywo:
   nieosiągalne nody (`android-web1`, `crm-api`) blokują (nie cichy host),
-  `node:lenovo`→lenovo, `host+node:lenovo`→lenovo. Pierwsza z Gen 2–10 z domkniętym
+  `node:lenovo`→lenovo, `host+node:lenovo`→lenovo. Pierwsza z Gen 2–11 z domkniętym
   trybem **offline→live** wg spec — potwierdza, że wdrożony system jest honorowy.
 - **Gen 6: `gen6_recall_adaptation.py` + `test_gen6.py`** — recall jako
   propozycja adaptowana do bieżącego środowiska; 7/7 oracle, mutant „literalny
@@ -133,7 +144,12 @@ go wykrywa.
 - **Gen 10: `gen10_idempotence.py` + `test_gen10.py`** — guard idempotencji po
   kluczu; 4/4 oracle, mutant „repeat re-wykonuje na ślepo" łapany
   (`double-mutation`): liczba mutacji == liczba różnych kluczy, query bez efektu.
+- **Gen 11: `gen11_capability_acquisition.py` + `test_gen11.py`** — autonomiczny
+  robot rozszerza przestrzeń akcji w runtime. 6/6 oracle, trzy mutanty łapane
+  tym samym checkerem: cichy skip luki (`verify-honesty`), acquisition bez bramy
+  (`ungated-acquisition`), restart zamiast wznowienia (`restart-instead-of-resume`).
+  To domyka tezę: acquisition miękki, admisja twarda.
 - **`run_ladder.py`** — zbiorczy runner egzekwujący META-niezmiennik drabiny:
   każda generacja musi mieć (1) mutanta w module (`buggy_*`/`Buggy*`), (2)
   test-mutanta asercjonujący złapanie, (3) zielony oracle. Brak któregokolwiek =
-  czerwone. `9/9` — drabina jest samo-pilnująca: generacja bez zębów nie wejdzie.
+  czerwone. `10/10` — drabina jest samo-pilnująca: generacja bez zębów nie wejdzie.

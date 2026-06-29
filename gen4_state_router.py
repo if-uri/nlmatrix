@@ -33,6 +33,10 @@ class State:
     monitors: tuple[int, ...] = (1, 2)
 
 
+def _fingerprint(state: State) -> str:
+    return "env-monitors-" + ",".join(str(m) for m in state.monitors)
+
+
 def _state(data: dict | State) -> State:
     if isinstance(data, State):
         return data
@@ -63,6 +67,7 @@ def _capture_event(surface: str, state: State, **extra) -> dict:
         "nodeOnlineAtDispatch": state.node_online,
         "cdpAliveAtDispatch": state.cdp_alive,
         "monitorsAtDispatch": list(state.monitors),
+        "actualMonitorsAtDispatch": list(state.monitors),
         **extra,
     }
 
@@ -158,6 +163,54 @@ def buggy_cached_router(case: dict) -> dict:
     return _block("unknown-intent", trace, state)
 
 
+def fingerprint_cached_inventory_router(case: dict) -> dict:
+    """Inventory cache that is safe because the heavy value is keyed by a cheap live fingerprint."""
+    state = _apply_event(_state(case["initial"]), case.get("events", {}).get("after_plan"))
+    trace: list[dict] = []
+    intent = case["intent"]
+    if intent["kind"] != "monitor_capture":
+        return route_and_execute(case)
+    state = _apply_event(state, case.get("events", {}).get("before_capture"))
+    if not state.node_online:
+        return _block("node-offline", trace, state)
+
+    monitor = int(intent["monitor"])
+    cache = dict(case.get("inventory_cache") or {})
+    fp = _fingerprint(state)
+    inventory = cache.get(fp)
+    if inventory is None:
+        inventory = {"fingerprint": fp, "monitors": list(state.monitors)}
+        cache[fp] = inventory
+    monitors = list(inventory.get("monitors") or [])
+    if monitor not in monitors:
+        return _block("monitor-unavailable", trace, state)
+    trace.append(_capture_event("monitor", state, monitor=monitor,
+                                inventoryFingerprint=inventory.get("fingerprint"),
+                                monitorsAtDispatch=monitors))
+    return {"status": "ok", "reason": "monitor-capture", "trace": trace, "final": state}
+
+
+def buggy_unkeyed_inventory_cache(case: dict) -> dict:
+    """Flawed cache: reuses the initial heavy inventory regardless of the live fingerprint."""
+    snapshot = _state(case["initial"])
+    state = _apply_event(snapshot, case.get("events", {}).get("after_plan"))
+    trace: list[dict] = []
+    intent = case["intent"]
+    if intent["kind"] != "monitor_capture":
+        return buggy_cached_router(case)
+    monitor = int(intent["monitor"])
+    stale_inventory = {"fingerprint": _fingerprint(snapshot), "monitors": list(snapshot.monitors)}
+    state = _apply_event(state, case.get("events", {}).get("before_capture"))
+    monitors = list(stale_inventory.get("monitors") or [])
+    if monitor not in monitors:
+        return _block("monitor-unavailable", trace, state)
+    trace.append(_capture_event("monitor", state, monitor=monitor,
+                                inventoryFingerprint=stale_inventory.get("fingerprint"),
+                                monitorsAtDispatch=monitors,
+                                actualMonitorsAtDispatch=list(state.monitors)))
+    return {"status": "ok", "reason": "stale-inventory-cache", "trace": trace, "final": state}
+
+
 def expand() -> list[dict]:
     return [
         {
@@ -206,6 +259,16 @@ def expand() -> list[dict]:
             "expect": {"status": "blocked", "reason": "monitor-unavailable", "captures": 0},
         },
         {
+            "id": "inventory-cache-fingerprint-drift",
+            "intent": {"kind": "monitor_capture", "monitor": 2},
+            "initial": {"node_online": True, "monitors": [1, 2]},
+            "events": {"before_capture": {"monitors": [1]}},
+            "inventory_cache": {
+                "env-monitors-1,2": {"fingerprint": "env-monitors-1,2", "monitors": [1, 2]},
+            },
+            "expect": {"status": "blocked", "reason": "monitor-unavailable", "captures": 0},
+        },
+        {
             "id": "node-offline-at-start",
             "intent": {"kind": "browser_capture"},
             "initial": {"node_online": False, "cdp_alive": True, "monitors": [1, 2]},
@@ -248,6 +311,11 @@ def check(case: dict, result: dict) -> list[str]:
         if cap.get("surface") == "monitor" and cap.get("monitor") not in cap.get("monitorsAtDispatch", []):
             v.append(f"stale-monitor-domain: captured monitor {cap.get('monitor')} "
                      f"not in {cap.get('monitorsAtDispatch')}")
+        if (cap.get("surface") == "monitor" and cap.get("monitor") is not None
+                and "actualMonitorsAtDispatch" in cap
+                and cap.get("monitor") not in cap.get("actualMonitorsAtDispatch", [])):
+            v.append(f"stale-inventory-cache: cached inventory allowed monitor {cap.get('monitor')} "
+                     f"but live monitors were {cap.get('actualMonitorsAtDispatch')}")
     if case["id"] == "cdp-dead-ensure-then-cdp" and captures:
         if captures[-1].get("surface") != "cdp":
             v.append("stale-cdp-diagnosis: ensure made CDP live but router kept monitor fallback")

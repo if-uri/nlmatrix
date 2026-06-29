@@ -75,12 +75,21 @@ def scenario() -> list[dict]:
     ]
 
 
+def expand() -> list[dict]:
+    return [{"id": "preference-sequence"}]
+
+
 def run(session) -> list[dict]:
     return [session.decide(i["fp"], i["options"], i["answer"]) for i in scenario()]
 
 
+def run_case(_case: dict, engine=Session) -> list[dict]:
+    return run(engine())
+
+
 # --- niezmienniki (z zębami) --------------------------------------------------
-def check(results: list[dict]) -> list[str]:
+def check(*args) -> list[str]:
+    results = args[-1]
     v: list[str] = []
     interactions = scenario()
     remembered: dict[str, int] = {}  # fp -> value remembered so far (replayed)

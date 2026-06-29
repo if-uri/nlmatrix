@@ -9,7 +9,7 @@ autonomii. Pełny pytest po domknięciu kolejnych generacji, dodaniu meta-bramy 
 uwzględnieniu regresji live:
 
 ```text
-90 passed
+98 passed, 1 xfailed
 ```
 
 Generator bazowy/offline:
@@ -24,7 +24,7 @@ Generacje architektoniczne z runnerów:
 ```text
 Gen2 data-flow:        8/8
 Gen3 reversibility:   12/12
-Gen4 state-router:     8/8
+Gen4 state-router:     9/9
 Gen5 cross-target:     9/9
 Gen6 recall-adapt:     7/7
 Gen7 effect-honesty:   9/9
@@ -59,6 +59,8 @@ potwierdzać happy path.
 - Gen9 łapie preferencje, które nie są kluczowane fingerprintem środowiska.
 - Gen10 łapie ślepe ponowienie mutacji i duplikaty operacji wykonawczych.
 - Live checker łapie teraz także zdublowany `window/command/focus` w flow.
+- Live checker łapie przeciek efektu w preview: `execute=false` + screenshot/artifact
+  evidence (`path`, `artifactPath`, `pngbase64`) kończy jako `dry-run-effect`.
 - Live smoke no-LLM przez lokalny chat nie łamie niezmienników dla sprawdzonych
   odpowiedzi i nie wykonuje screenshotów w `execute=false`:
 
@@ -92,7 +94,25 @@ request/response, `needs-selection`, brak cichego defaultu i brak niespójnych
 kopert. To jest właściwa metryka dla live/real, bo nie wymaga, żeby aktualna
 maszyna odtwarzała każdą fixturę. `needs-selection` jest dalej dzielone na
 uzasadnione i nieuzasadnione: autonomia to rozwiązać, gdy intencja + stan
-wystarczają, i pytać, gdy nie wystarczają.
+wystarczają, i pytać, gdy nie wystarczają. To nadal jest liczba matrycy, nie
+dowód pokrycia całej przestrzeni intencji.
+
+## Probe poza matrycą
+
+Dodano `ood_anchor_probe.py`, który mierzy frazy spoza 108-case korpusu. Aktualny
+no-LLM wynik:
+
+```text
+python3 ood_anchor_probe.py
+required OOD anchors: 1/2
+VS Code:   window/query/list -> capture(monitor_from) działa
+terminal:  brak window-anchor flow
+known-gap: relacja przestrzenna "obok terminala", deskryptor "duży monitor"
+```
+
+Interpretacja: no-LLM generalizuje już część app-anchorów z live window inventory,
+ale `27 justified / 0 unjustified` nie oznacza pełnej autonomii. Migrację z leksyki
+do deklaratywnego/LLM planowania należy bramkować właśnie takimi OOD rodzinami.
 
 ## Co jeszcze nie działa jako pełna autonomia
 
@@ -101,6 +121,10 @@ jako codzienna brama. Pełny `testing/live_run.py --execute 0 --no-llm` został
 przerwany po kilku minutach, bo każdy prompt pobiera pełne
 profile/surface/window/browserSessions. To jest bottleneck warstwy środowiska,
 nie aktualna porażka predykatu akceptacji.
+
+Gen4 został rozszerzony o cache inventory: ciężki inventory można cache'ować tylko
+pod tanim live fingerprintem. Cache po sesji/czasie, który przepuszcza stary
+monitor po zmianie fingerprintu, jest łapany jako `stale-inventory-cache`.
 
 Druga luka jest architektoniczna: no-LLM nadal zawiera leksykalne fallbacki
 (`_SCREENSHOT_KWS`, `_ALL_MONITOR_KWS`, wzorce monitorów) w `urirun_flow`.

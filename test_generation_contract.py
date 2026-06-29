@@ -52,6 +52,11 @@ GENERATIONS = [
     Generation("Gen5", "gen5_cross_target", "route", "buggy_route", "gen5_cross_target.py"),
     Generation("Gen6", "gen6_recall_adaptation", "adapt_recall", "buggy_literal_recall", "gen6_recall_adaptation.py"),
     Generation("Gen7", "gen7_effect_honesty", "verdict", "buggy_verdict", "gen7_effect_honesty.py"),
+    Generation("Gen8", "gen8_verification", "execute", "buggy_execute", "gen8_verification.py"),
+    Generation("Gen9", "gen9_preference_memory", "Session", "BuggySession", "gen9_preference_memory.py"),
+    Generation("Gen10", "gen10_idempotence", "execute", "buggy_execute", "gen10_idempotence.py"),
+    Generation("Gen11", "gen11_capability_acquisition", "run_episode", "buggy_skip_missing",
+               "gen11_capability_acquisition.py"),
 ]
 
 

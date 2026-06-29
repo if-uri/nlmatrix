@@ -109,10 +109,11 @@ i po naprawie lokalnego dispatchu:
 - **needs-selection:** `27 justified`, `0 unjustified`.
 
 To oznacza, że realny no-LLM tor planowania/rozstrzygania przechodzi wszystkie
-metamorficzne właściwości na kontrolowanym stanie twina. „Goły screenshot" przy
-wielu monitorach nadal poprawnie pyta, ale anchor „monitor z Chrome" przechodzi
-przez `window/query/list -> screen/query/capture(monitor_from)`, jawny monitor
-jest typed value, `scope=all` jest typed scope, a monitor spoza domeny kończy jako
+metamorficzne właściwości na kontrolowanym stanie twina. To jest liczba matrycy,
+nie dowód pokrycia całej przestrzeni intencji. „Goły screenshot" przy wielu
+monitorach nadal poprawnie pyta, ale anchor „monitor z Chrome" przechodzi przez
+`window/query/list -> screen/query/capture(monitor_from)`, jawny monitor jest typed
+value, `scope=all` jest typed scope, a monitor spoza domeny kończy jako
 `env-domain-invalid` z listą dozwolonych wartości, nie jako pusta karta wyboru.
 
 Live HTTP przez dashboard jest osobnym pomiarem wydajnościowo-operacyjnym. Smoke
@@ -121,6 +122,11 @@ na `execute=false` dla pięciu klas (`anchor`, `generic`, `explicit-2`, `all`,
 `testing/live_run.py --execute 0 --no-llm` jest obecnie za wolny jako brama
 interaktywna, bo każdy prompt odpyta pełne profile/surface/window/browserSessions.
 Ten tor wymaga cache/budżetu czasowego dla `twin://host/env/query/inventory`.
+
+Live invariant pilnuje też granicy efektu preview: przy `execute=false` odpowiedź
+nie może zawierać screenshot/artifact evidence (`path`, `artifactPath`,
+`pngbase64`). Jeśli `local_first` albo inny dispatch znowu wykona capture w
+dry-run, `check_invariants()` zwróci `dry-run-effect`.
 
 Stan `--real --llm` wymaga skonfigurowanego providera. Model można podać przez
 `URIRUN_LLM_MODEL`/`LLM_MODEL` albo jawnie przez `--model`; dashboard dodatkowo
@@ -148,6 +154,23 @@ ile było `planner-error`, ile razy tor spadł do heurystyki z powodu providera
 próg do decyzji, czy LLM prowadzi domyślny tor:
 brama pozostaje twarda, ale planowanie mierzymy jako rozkład.
 
+## Probe poza matrycą
+
+`ood_anchor_probe.py` mierzy frazy spoza 108-case korpusu. To nie jest domyślna
+brama CI, tylko falsyfikator zasięgu:
+
+```bash
+python3 ood_anchor_probe.py
+python3 ood_anchor_probe.py --llm --model openrouter/model --strict
+```
+
+Aktualny no-LLM wynik: `VS Code` generalizuje do `window/query/list ->
+capture(monitor_from)`, ale `terminal` nie. Relacje przestrzenne (`obok terminala`)
+i deskryptory monitora (`duży monitor`) są oznaczone jako known-gap, bo wymagają
+bogatszego modelu środowiska niż sama nazwa okna. To jest właściwy odczyt
+`27 justified / 0 unjustified`: matryca jest pokryta, ale przestrzeń intencji
+nadal wymaga OOD probe albo LLM.
+
 ## Atestacje warstwowe
 
 `layer_attestations.py` i `test_attestations.py` pilnują, żeby anomalia była
@@ -164,6 +187,19 @@ Po restarcie dashboardu `execute=true` dla
 wygenerował zrzut z DP-2/AOC 4K przez data-flow z inventory:
 `window/query/list(app=chrome) -> window/command/focus -> screen/query/capture`.
 Artefakt miał `monitor=2`, `outputConnector=DP-2`, `scope=monitor`.
+
+## Deklaracje zamiast kodu
+
+`reuse_via_declarations.py` jest małym dowodem interop: jeden resolver slotów
+obsługuje monitor, kamerę, audio sink i drukarkę, bo czyta domeny z deklaracji,
+nie zna urządzeń po nazwie. Test `test_reuse_via_declarations.py` sprawdza też
+bajt-kodem, że dodanie drukarki zmienia tylko dane (`CONTRACTS`/`INVENTORY`), a
+nie implementację resolvera.
+
+```bash
+python3 reuse_via_declarations.py
+python3 -m pytest test_reuse_via_declarations.py -q
+```
 
 ## Domknięcie pętli
 

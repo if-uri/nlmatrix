@@ -37,6 +37,14 @@ def test_monitor_detach_blocks_not_stale_capture():
     assert not [e for e in res["trace"] if e.get("step") == "capture"]
 
 
+def test_fingerprint_cache_invalidates_heavy_inventory_on_drift():
+    c = next(c for c in g.expand() if c["id"] == "inventory-cache-fingerprint-drift")
+    res = g.run_case(c, engine=g.fingerprint_cached_inventory_router)
+    assert res["status"] == "blocked"
+    assert res["reason"] == "monitor-unavailable"
+    assert g.check(c, res) == []
+
+
 # --- the flawed architecture must be CAUGHT -----------------------------------
 def test_cached_router_keeps_monitor_fallback_after_ensure():
     c = next(c for c in g.expand() if c["id"] == "cdp-dead-ensure-then-cdp")
@@ -68,3 +76,11 @@ def test_cached_router_ignores_node_offline_before_capture():
     viol = g.check(c, res)
     assert any("stale-node-reachability" in x for x in viol), \
         "cached router captured after target node went offline; checker must flag it"
+
+
+def test_unkeyed_inventory_cache_reuses_stale_monitor_domain():
+    c = next(c for c in g.expand() if c["id"] == "inventory-cache-fingerprint-drift")
+    res = g.run_case(c, engine=g.buggy_unkeyed_inventory_cache)
+    viol = g.check(c, res)
+    assert any("stale-inventory-cache" in x for x in viol), \
+        "inventory cache keyed by session/time reused stale monitors; checker must flag it"

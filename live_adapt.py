@@ -13,6 +13,26 @@ INVENTORY_KEY = "twin:inventory:host"
 ALL_SCOPES = {"all", "all-monitors", "desktop"}
 
 
+def _artifact_evidence(envelope: dict) -> list[str]:
+    evidence: list[str] = []
+
+    def walk(value, path: str = "$") -> None:
+        if isinstance(value, dict):
+            kind = str(value.get("kind") or "").lower()
+            for key in ("path", "artifactPath", "pngbase64", "pngBase64"):
+                if value.get(key):
+                    if key.lower() == "pngbase64" or "screenshot" in kind or str(value.get(key)).endswith((".png", ".jpg", ".jpeg")):
+                        evidence.append(f"{path}.{key}")
+            for key, child in value.items():
+                walk(child, f"{path}.{key}")
+        elif isinstance(value, list):
+            for idx, child in enumerate(value):
+                walk(child, f"{path}[{idx}]")
+
+    walk(envelope)
+    return sorted(set(evidence))
+
+
 def _result_by_uri(results: dict, uri: str):
     for _id, r in (results or {}).items():
         if isinstance(r, dict) and r.get("invokedUri") == uri:
@@ -38,6 +58,7 @@ def adapt(envelope: dict) -> dict:
 
     out = {
         "ok": envelope.get("ok", False),
+        "execute": envelope.get("execute"),
         "routing": {
             "accepted": routing.get("accepted", False),
             "blockedSteps": routing.get("blockedSteps", []) or [],
@@ -47,6 +68,7 @@ def adapt(envelope: dict) -> dict:
         "results": {},
         "needsSelection": envelope.get("needsSelection"),
         "flow": envelope.get("flow", {}) or {},
+        "artifactEvidence": _artifact_evidence(envelope),
     }
 
     inv = results.get(INVENTORY_KEY, {}) or {}

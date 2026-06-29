@@ -29,8 +29,11 @@ def attest_target_correlation(trace: dict) -> list[dict]:
         if not isinstance(sr, dict):
             continue
         uri = str(sr.get("invokedUri") or sr.get("uri") or "")
-        res_target = (sr.get("result") or {}).get("target") if isinstance(sr.get("result"), dict) else None
-        res_target = res_target if res_target is not None else sr.get("target")
+        # Top-level results.target is execution metadata stamped by the flow engine.
+        # Nested result.target is connector/domain payload and may be stale or local.
+        res_target = sr.get("target")
+        if res_target is None and isinstance(sr.get("result"), dict):
+            res_target = (sr.get("result") or {}).get("target")
         route_target = runs_on.get(uri)
         tl_target = timeline_target.get(sid)
         seen = {x for x in (res_target, route_target, tl_target) if x is not None}
@@ -49,6 +52,15 @@ BUGGY_TRACE = {
     "routing": {"runsOnByStep": {"kvm://host/screen/query/capture": "lenovo"}},
     "results": {"kvm_host_screen_query_capture": {
         "invokedUri": "kvm://host/screen/query/capture",
+        "result": {"target": "host", "kind": "screenshot", "ok": True}}},
+    "timeline": [{"id": "kvm_host_screen_query_capture", "target": "lenovo", "ok": True}],
+}
+
+FIXED_TRACE = {
+    "routing": {"runsOnByStep": {"kvm://host/screen/query/capture": "lenovo"}},
+    "results": {"kvm_host_screen_query_capture": {
+        "invokedUri": "kvm://host/screen/query/capture",
+        "target": "lenovo",
         "result": {"target": "host", "kind": "screenshot", "ok": True}}},
     "timeline": [{"id": "kvm_host_screen_query_capture", "target": "lenovo", "ok": True}],
 }

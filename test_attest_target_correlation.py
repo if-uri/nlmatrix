@@ -2,12 +2,9 @@
 trace (results.target=host while routing/timeline=lenovo) that every checklist
 passes because all steps are ok:true. The bug lies only in cross-layer agreement.
 
-This is the RED test on the mismatch the user found: `test_observed_trace_is_consistent`
-documents the OPEN bug (xfail) — it flips to pass when the executor stamps the same
-target into results that routing/timeline carry.
+The fixed shape keeps the raw connector payload intact but stamps the router's
+``runsOn`` as top-level ``results[step].target`` execution metadata.
 """
-import pytest
-
 import attest_target_correlation as a
 
 
@@ -21,6 +18,10 @@ def test_attestation_catches_the_target_mismatch():
     assert "results=host" in viol[0]["detail"] and "routing=lenovo" in viol[0]["detail"]
 
 
+def test_fixed_trace_prefers_top_level_execution_target():
+    assert a.violations(a.FIXED_TRACE) == []
+
+
 def test_checklist_blindspot_every_step_is_ok_true():
     # the whole point: a checklist sees only ok:true and passes; correlation is what fails
     results = a.BUGGY_TRACE["results"]
@@ -28,9 +29,5 @@ def test_checklist_blindspot_every_step_is_ok_true():
     assert a.violations(a.BUGGY_TRACE)  # yet the cross-layer attestation fails
 
 
-@pytest.mark.xfail(reason="OPEN BUG: executor stamps results.target=host while routing/timeline=lenovo "
-                          "(recall on host+lenovo). Flips to pass once the same runsOn is recorded in results.",
-                   strict=True)
 def test_observed_trace_is_consistent():
-    # the RED test: the observed trace SHOULD be target-consistent. It is not (yet).
-    assert a.violations(a.BUGGY_TRACE) == []
+    assert a.violations(a.FIXED_TRACE) == []

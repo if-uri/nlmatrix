@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Zbiorczy runner drabiny generacji (Gen 2–10).
+"""Zbiorczy runner drabiny generacji (Gen 2-11).
 
 Egzekwuje META-niezmiennik, na którym stoi cała drabina:
 
@@ -35,6 +35,7 @@ LADDER = [
     (8, "gen8_verification", "`ok:true` na kroku == zadanie zrobione"),
     (9, "gen9_preference_memory", "preferencja globalna, nie per-fingerprint"),
     (10, "gen10_idempotence", "powtórzenie wykonuje na ślepo ponownie"),
+    (11, "gen11_capability_acquisition", "samorozszerzenie omija bramę admisji"),
 ]
 
 
@@ -52,7 +53,15 @@ def _testfile_has_mutant_test(gen: int) -> bool:
         return False
     txt = path.read_text(encoding="utf-8").lower()
     has_mutant_engine = "buggy" in txt           # exercises the flawed engine
-    has_catch_assert = "must flag" in txt or "checker must" in txt or "diverge" in txt or "leak" in txt
+    has_catch_assert = (
+        "must flag" in txt
+        or "checker must" in txt
+        or "must be caught" in txt
+        or "diverge" in txt
+        or "leak" in txt
+        or "zlap" in txt
+        or "złap" in txt
+    )
     return "def test_" in txt and has_mutant_engine and has_catch_assert
 
 

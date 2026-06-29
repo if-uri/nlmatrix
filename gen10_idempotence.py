@@ -76,7 +76,9 @@ def expand() -> list[dict]:
 
 
 # --- niezmienniki (z zębami) --------------------------------------------------
-def check(case: dict, world: dict, results: list[dict]) -> list[str]:
+def check(case: dict, world: dict | tuple[dict, list[dict]], results: list[dict] | None = None) -> list[str]:
+    if results is None:
+        world, results = world
     v: list[str] = []
     exp = case["expect"]
     if world["sent"] != exp["sent"]:
