@@ -36,6 +36,23 @@ def test_downstream_self_consistency_MISSES_the_data_bug():
         "samospójność w dół NIE łapie błędu danych — dlatego potrzebna redundancja w L8"
 
 
+def test_target_divergence_is_flagged_at_L11_L3_seam():
+    # The "silent triumph + one warning" trace: every step is ok:true, but results.target=host
+    # while routing.runsOn=lenovo and timeline=lenovo for the SAME step. No checklist catches it;
+    # only cross-layer agreement lies. The attestation must flag it and attribute the L11↔L3 seam.
+    t = la.TARGET_DIVERGENT
+    log = la.attest_target_correlation(t["routing"], t["results"], t["timeline"])
+    fault = la.attribution(log)
+    assert fault is not None and fault["layer"] == "L11↔L3"
+    assert "host" in fault["detail"] and "lenovo" in fault["detail"]
+
+
+def test_aligned_targets_pass_target_correlation():
+    t = la.TARGET_ALIGNED
+    log = la.attest_target_correlation(t["routing"], t["results"], t["timeline"])
+    assert all(e["ok"] for e in log)
+
+
 def test_independent_geometry_catches_even_if_connector_shares_the_fault():
     # gdyby obie pochodziły z tego samego zepsutego pola, cross-field by nie złapał;
     # geometria jest w pełni niezależna od AT-SPI i łapie i tak.

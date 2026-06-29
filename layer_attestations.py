@@ -99,6 +99,52 @@ def attest_capture_consistency(captured_monitor: int, selected_monitor: int) -> 
              "detail": f"captured={captured_monitor} {'==' if ok else '!='} selected={selected_monitor}"}]
 
 
+# =============================================================================
+# L11 ↔ L3 — korelacja celu: ten sam krok ma JEDEN target we wszystkich warstwach
+# =============================================================================
+def attest_target_correlation(routing: dict, results: dict, timeline: list) -> list[dict]:
+    """Ten sam krok musi raportować TEN SAM target w ``results``, ``routing.runsOnByStep`` i
+    ``timeline``. Brat niezmiennika korelacji z L2 (request.prompt == response.prompt), ale na
+    szwie L11↔L3: gdy ``results[step].target=host`` a ``routing.runsOn=lenovo``, jedna operacja
+    ma dwa cele w jednej kopercie — pytanie bez odpowiedzi 'na której maszynie NAPRAWDĘ zrobiono
+    zrzut'. Każdy krok ma ``ok:true``, więc checklista to przepuszcza; kłamie dopiero ZGODNOŚĆ
+    między warstwami — dlatego to atestacja, nie checklista."""
+    out: list[dict] = []
+    runs_on = routing.get("runsOnByStep") or {}
+    tl_target = {t.get("uri"): t.get("target") for t in (timeline or []) if isinstance(t, dict)}
+    for sid, r in (results or {}).items():
+        if not isinstance(r, dict):
+            continue
+        uri = r.get("invokedUri")
+        named = [(layer, t) for layer, t in (("results", r.get("target")),
+                 ("routing.runsOn", runs_on.get(uri)), ("timeline", tl_target.get(uri)))
+                 if t is not None]
+        distinct = {t for _, t in named}
+        if len(distinct) > 1:
+            out.append({"layer": "L11↔L3", "seam": f"step {sid}→target", "ok": False,
+                        "detail": "krok " + str(uri) + " ma różne cele: " +
+                                  ", ".join(f"{layer}={t}" for layer, t in named)})
+    if not out:
+        out.append({"layer": "L11↔L3", "seam": "step→target", "ok": True,
+                    "detail": "wszystkie warstwy zgodne co do targetu każdego kroku"})
+    return out
+
+
+# --- ślad recall z rozjazdem target (host vs lenovo) w jednej kopercie --------
+TARGET_DIVERGENT = {
+    "routing": {"runsOnByStep": {"kvm://host/screen/query/capture": "lenovo"}},
+    "results": {"kvm_host_screen_query_capture":
+                {"invokedUri": "kvm://host/screen/query/capture", "target": "host"}},
+    "timeline": [{"uri": "kvm://host/screen/query/capture", "target": "lenovo"}],
+}
+TARGET_ALIGNED = {
+    "routing": {"runsOnByStep": {"kvm://host/screen/query/capture": "lenovo"}},
+    "results": {"kvm_host_screen_query_capture":
+                {"invokedUri": "kvm://host/screen/query/capture", "target": "lenovo"}},
+    "timeline": [{"uri": "kvm://host/screen/query/capture", "target": "lenovo"}],
+}
+
+
 def run_attestations(trace: dict) -> list[dict]:
     """Złóż log atestacji ze wszystkich szwów. Pierwsza ok:False = atrybucja."""
     inv = trace["inventory"]
