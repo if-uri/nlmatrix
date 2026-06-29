@@ -108,6 +108,42 @@ def test_mutant_dry_run_artifact_evidence_caught():
     assert any("dry-run-effect" in x for x in lp.check_invariants(a))
 
 
+def test_contract_examples_are_not_dry_run_artifact_evidence():
+    env = {
+        "execute": False,
+        "routing": {
+            "accepted": True,
+            "steps": [{
+                "ok": True,
+                "uri": "kvm://host/screen/query/capture",
+                "effect": "query",
+                "route": {
+                    "safe": True,
+                    "meta": {
+                        "contract": {
+                            "effect": "query",
+                            "examples": [{
+                                "result": {
+                                    "kind": "screenshot",
+                                    "path": "/tmp/example.png",
+                                },
+                            }],
+                        },
+                    },
+                },
+            }],
+        },
+        "flow": {"steps": [{"id": "capture", "uri": "kvm://host/screen/query/capture"}]},
+        "results": {},
+        "attachments": [],
+    }
+
+    a = live_adapt.adapt(env)
+
+    assert a["artifactEvidence"] == []
+    assert not any("dry-run-effect" in x for x in lp.check_invariants(a))
+
+
 def test_correlation_prompt_and_no_llm_are_asserted_when_echoed():
     env = _load()
     env["prompt"] = "jaka jest dzisiaj data"

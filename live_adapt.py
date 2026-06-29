@@ -29,7 +29,12 @@ def _artifact_evidence(envelope: dict) -> list[str]:
             for idx, child in enumerate(value):
                 walk(child, f"{path}[{idx}]")
 
-    walk(envelope)
+    # Route metadata contains contract examples and output schemas with sample
+    # paths. Those are documentation, not evidence that a dry-run produced an
+    # artifact. Only execution result surfaces can prove a side effect.
+    walk(envelope.get("results") or {}, "$.results")
+    walk(envelope.get("attachments") or [], "$.attachments")
+    walk(envelope.get("artifacts") or [], "$.artifacts")
     return sorted(set(evidence))
 
 
