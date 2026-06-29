@@ -1,0 +1,28 @@
+
+##### family: conflict
+
+Metamorphic family               fixture     portable
+  conflict                       ✗ 4/9     ✓ 9/9  
+
+FIXTURE RESULT:  4/9 NL cases satisfy synthetic oracle
+PORTABLE RESULT: 9/9 checked (0 planner-error skip)
+(family conflict: 732s)
+
+##### family: scope-all
+
+Metamorphic family               fixture     portable
+  scope-all                      ✗ 4/9     ✓ 9/9  
+
+FIXTURE RESULT:  4/9 NL cases satisfy synthetic oracle
+PORTABLE RESULT: 9/9 checked (0 planner-error skip)
+(family scope-all: 540s)
+
+##### family: seed/paraphrase
+
+Metamorphic family               fixture     portable
+  seed/paraphrase                ✓ 9/9     ✓ 9/9  
+
+FIXTURE RESULT:  9/9 NL cases satisfy synthetic oracle
+PORTABLE RESULT: 9/9 checked (0 planner-error skip)
+(family seed/paraphrase: 392s)
+ALL DONE

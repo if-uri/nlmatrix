@@ -70,6 +70,44 @@ def test_mutant_dataflow_missing_dependency_caught():
     assert any("dataflow" in x for x in lp.check_invariants(a))
 
 
+def test_mutant_duplicate_focus_step_caught():
+    env = _load()
+    env["flow"]["steps"] = [
+        env["flow"]["steps"][0],
+        {
+            "id": "focus_list_chrome_windows",
+            "uri": "kvm://host/window/command/focus",
+            "payload": {"title": "chrome"},
+            "depends_on": ["list_chrome_windows"],
+        },
+        {
+            "id": "focus_list_chrome_windows_2",
+            "uri": "kvm://host/window/command/focus",
+            "payload": {"title": "chrome"},
+            "depends_on": ["list_chrome_windows"],
+        },
+        env["flow"]["steps"][1],
+    ]
+    env["flow"]["steps"][3]["depends_on"] = [
+        "focus_list_chrome_windows",
+        "focus_list_chrome_windows_2",
+        "list_chrome_windows",
+    ]
+
+    a = live_adapt.adapt(env)
+
+    assert any("duplicate focus" in x for x in lp.check_invariants(a))
+
+
+def test_mutant_dry_run_artifact_evidence_caught():
+    env = _load()
+    env["execute"] = False
+
+    a = live_adapt.adapt(env)
+
+    assert any("dry-run-effect" in x for x in lp.check_invariants(a))
+
+
 def test_correlation_prompt_and_no_llm_are_asserted_when_echoed():
     env = _load()
     env["prompt"] = "jaka jest dzisiaj data"

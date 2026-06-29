@@ -9,7 +9,10 @@ by the machine; fixture-controlled absolutes belong to the offline oracle).
 """
 from __future__ import annotations
 
+import json
+
 ALL_SCOPES = {"all", "all-monitors", "desktop"}
+FOCUS_URI_SUFFIX = "/window/command/focus"
 
 
 def _inventory_ids(adapted):
@@ -62,7 +65,12 @@ def check_invariants(adapted) -> list[str]:
         if ids and clean != sorted(ids):
             v.append(f"needs-selection: options {opt} != inventory {ids}")
 
+    if adapted.get("execute") is False and adapted.get("artifactEvidence"):
+        v.append(f"dry-run-effect: execute=false response contains artifact evidence "
+                 f"{adapted.get('artifactEvidence')}")
+
     v += _dataflow(adapted)
+    v += _idempotent_flow_shape(adapted)
     return v
 
 
@@ -82,6 +90,39 @@ def _dataflow(adapted) -> list[str]:
                 v.append(f"dataflow: {sid} references {src} which is not earlier")
             elif src not in (s.get("depends_on") or []):
                 v.append(f"dataflow: {sid} refs {src} but it is not in depends_on")
+    return v
+
+
+def _stable_json(value) -> str:
+    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+
+
+def _idempotent_flow_shape(adapted) -> list[str]:
+    """Catch duplicate executable steps that a normalizer should have collapsed.
+
+    This is deliberately narrow: only identical native window-focus commands with the same
+    payload and dependencies are flagged. That is the stale-process/recall failure observed
+    in production; distinct focus commands remain legal.
+    """
+    v: list[str] = []
+    seen: dict[tuple[str, str, tuple[str, ...]], str] = {}
+    steps = (adapted.get("flow", {}) or {}).get("steps", []) or []
+    for s in steps:
+        uri = str(s.get("uri") or "")
+        if not uri.endswith(FOCUS_URI_SUFFIX):
+            continue
+        key = (
+            uri,
+            _stable_json(s.get("payload") or {}),
+            tuple(str(dep) for dep in (s.get("depends_on") or [])),
+        )
+        sid = str(s.get("id") or "")
+        prev = seen.get(key)
+        if prev is not None:
+            v.append(f"idempotence: duplicate focus step {sid} repeats {prev} "
+                     "(normalizer should collapse equivalent focus commands)")
+        else:
+            seen[key] = sid
     return v
 
 

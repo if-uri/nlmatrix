@@ -33,6 +33,20 @@ def test_missing_dependency_blocks():
     assert res["reason"] == "ref-missing-dependency"
 
 
+def test_unknown_producer_blocks():
+    c = next(c for c in g.expand() if c["id"] == "unknown-producer")
+    res = g.run_case(c, engine=g.resolve)
+    assert res["status"] == "blocked"
+    assert res["reason"] == "ref-missing-dependency"
+
+
+def test_future_producer_blocks():
+    c = next(c for c in g.expand() if c["id"] == "future-producer")
+    res = g.run_case(c, engine=g.resolve)
+    assert res["status"] == "blocked"
+    assert res["reason"] == "ref-missing-dependency"
+
+
 # --- the flawed architecture must be CAUGHT -----------------------------------
 def test_buggy_resolver_silently_defaults_null_source():
     c = next(c for c in g.expand() if c["id"] == "source-null")
@@ -48,3 +62,19 @@ def test_buggy_resolver_ignores_missing_dependency():
     viol = g.check(c, res)
     assert any("silent-default" in x for x in viol), \
         "buggy resolver ignored dependency wiring; checker must flag it"
+
+
+def test_buggy_resolver_ignores_unknown_producer():
+    c = next(c for c in g.expand() if c["id"] == "unknown-producer")
+    res = g.run_case(c, engine=g.buggy_resolve)
+    viol = g.check(c, res)
+    assert any("silent-default" in x for x in viol), \
+        "buggy resolver defaulted an unknown producer; checker must flag it"
+
+
+def test_buggy_resolver_ignores_future_producer():
+    c = next(c for c in g.expand() if c["id"] == "future-producer")
+    res = g.run_case(c, engine=g.buggy_resolve)
+    viol = g.check(c, res)
+    assert any("silent-default" in x for x in viol), \
+        "buggy resolver resolved against a future producer/default; checker must flag it"

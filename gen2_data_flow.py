@@ -97,9 +97,9 @@ def _list_step(produces):
     return {"id": "list", "uri": _LIST, "payload": {"app": "chrome"}, "depends_on": [], "produces": produces}
 
 
-def _capture_step(depends_on=("list",)):
+def _capture_step(depends_on=("list",), ref="list.result.value.selected.monitor"):
     return {"id": "capture", "uri": _CAP, "depends_on": list(depends_on),
-            "payload": {"monitor_from": "list.result.value.selected.monitor"}}
+            "payload": {"monitor_from": ref}}
 
 
 def expand() -> list[dict]:
@@ -116,6 +116,15 @@ def expand() -> list[dict]:
         # consumer before producer (reordered) → dependency not yet satisfied
         {"id": "reordered", "source_missing": True, "expect": {"status": "blocked", "reason": "ref-missing-dependency"},
          "flow": {"steps": [_capture_step(), _list_step(sel3)]}},
+        # the reference names a producer that is not present in the flow at all
+        {"id": "unknown-producer", "source_missing": True,
+         "expect": {"status": "blocked", "reason": "ref-missing-dependency"},
+         "flow": {"steps": [_list_step(sel3), _capture_step(depends_on=("missing",),
+                                                            ref="missing.result.value.selected.monitor")]}},
+        # the producer exists, and is declared, but appears later than the consumer
+        {"id": "future-producer", "source_missing": True,
+         "expect": {"status": "blocked", "reason": "ref-missing-dependency"},
+         "flow": {"steps": [_capture_step(depends_on=("list",)), _list_step(sel3)]}},
         # reference without declaring depends_on → must block (no implicit wiring)
         {"id": "missing-dep", "source_missing": True, "expect": {"status": "blocked", "reason": "ref-missing-dependency"},
          "flow": {"steps": [_list_step(sel3), _capture_step(depends_on=())]}},

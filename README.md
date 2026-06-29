@@ -101,25 +101,26 @@ Dwa tryby plannera:
 - **real** — to, co stress-testujesz. Wariant, w którym planner mis-planuje,
   wychodzi jako naruszenie właściwości, **nie** po cichu „zaliczony".
 
-Stan na 2026-06-29 dla realnego no-LLM toru ma dwie liczby:
+Stan na 2026-06-29 po podłączeniu plannerowego inventory/window-list do dry-run
+i po naprawie lokalnego dispatchu:
 
-- **fixture oracle:** `53/108` — strict porównanie do syntetycznego `env_spec`;
-- **portable/live-safe:** `53/86 checked`, `22 planner-error skip` — brama,
-  grounding, efekt, korelacja request/response, brak cichego defaultu i
-  klasyfikacja `needs-selection`.
-- **needs-selection:** `24 justified`, `33 unjustified` — goły screenshot przy
-  wielu monitorach może pytać; „monitor z Chrome”, jawny monitor albo `scope=all`
-  nie powinny pytać, tylko rozwiązać/rejectować przez action_space + twin state.
+- **fixture oracle:** `108/108`;
+- **portable/live-safe:** `108/108 checked`, `0 planner-error skip`;
+- **needs-selection:** `27 justified`, `0 unjustified`.
 
-`53/108` nie jest jedną oceną poprawności systemu live, bo miesza fixturę
-syntetyczną (np. chrome na zadanym monitorze, jeden monitor, zapamiętana
-preferencja) z realnym planowaniem. `--portable` liczy warstwę, która ma sens
-na aktualnym środowisku i odróżnia poprawne pytanie od luki autonomii. Różnica
-między tymi liczbami nadal pokazuje realne braki planera bez LLM: parafrazy
-„monitor z chrome" nie generują stabilnie `window/query/list ->
-screen/query/capture(monitor_from)`, część wariantów „wszystkie monitory" nie
-ustawia `scope=all`, a niektóre jawne numery monitorów kończą jako
-`needs-selection` zamiast typed value/reject.
+To oznacza, że realny no-LLM tor planowania/rozstrzygania przechodzi wszystkie
+metamorficzne właściwości na kontrolowanym stanie twina. „Goły screenshot" przy
+wielu monitorach nadal poprawnie pyta, ale anchor „monitor z Chrome" przechodzi
+przez `window/query/list -> screen/query/capture(monitor_from)`, jawny monitor
+jest typed value, `scope=all` jest typed scope, a monitor spoza domeny kończy jako
+`env-domain-invalid` z listą dozwolonych wartości, nie jako pusta karta wyboru.
+
+Live HTTP przez dashboard jest osobnym pomiarem wydajnościowo-operacyjnym. Smoke
+na `execute=false` dla pięciu klas (`anchor`, `generic`, `explicit-2`, `all`,
+`oob`) potwierdził poprawne koperty i brak screenshotów w preview. Pełny
+`testing/live_run.py --execute 0 --no-llm` jest obecnie za wolny jako brama
+interaktywna, bo każdy prompt odpyta pełne profile/surface/window/browserSessions.
+Ten tor wymaga cache/budżetu czasowego dla `twin://host/env/query/inventory`.
 
 Stan `--real --llm` wymaga skonfigurowanego providera. Model można podać przez
 `URIRUN_LLM_MODEL`/`LLM_MODEL` albo jawnie przez `--model`; dashboard dodatkowo
@@ -128,12 +129,41 @@ Sekrety providera (np. API key) nadal muszą być w środowisku procesu. Brak mo
 jest raportowany jako `planner-error` skip — to precondition providera, nie
 zielony ani czerwony wynik architektury.
 
-Po restarcie dashboardu i jawnie podanym modelu `openrouter/google/gemini-3.5-flash`
-mały live smoke anchorów dał `1/3 checked`: jedna fraza rozwiązała się do
-`monitor=2 · output=DP-2 · scope=monitor · 2160x3840`, dwie nadal wróciły jako
-`needs-selection-unjustified`. To znaczy: tor LLM umie już wygenerować właściwy
-data-flow, ale coverage jest rozkładem do mierzenia, nie stałą gwarancją jednej
-próby.
+## Pomiar toru LLM jako rozkładu
+
+Pojedynczy zielony ślad z anchorem Chrome jest dobrym dowodem kierunku, ale nie
+jest miarą produkcyjną. Do tego służy:
+
+```bash
+python3 llm_anchor_distribution.py --runs 3 --limit 3
+python3 llm_anchor_distribution.py --runs 5 --model openrouter/model --json
+```
+
+Runner wysyła anchor-prompty do live chatu z `no_llm=false`, przed zbudowaniem
+requestu pobiera model z `URIRUN_LLM_MODEL`, potem `LLM_MODEL`, a gdy ich nie ma
+z niesekretnego `/api/chat/config` (chyba że podasz `--model`) i mierzy: ile planów
+przeszło live-invariants, ile miało `window/query/list -> capture(monitor_from)`,
+ile było `planner-error`, ile razy tor spadł do heurystyki z powodu providera
+(`heuristicFallback` + `generatorReason`), oraz p50/p90 latencji. To jest właściwy
+próg do decyzji, czy LLM prowadzi domyślny tor:
+brama pozostaje twarda, ale planowanie mierzymy jako rozkład.
+
+## Atestacje warstwowe
+
+`layer_attestations.py` i `test_attestations.py` pilnują, żeby anomalia była
+przypisana do właściwej warstwy. Przykład DP-2/DP-1 jest celowo redundantny:
+samospójność w dół (`captured == selected`) przepuszcza błąd, więc L8 inventory
+musi być weryfikowane niezależnie przez `monitorConnector` i geometrię okna.
+
+```bash
+python3 -m pytest test_attestations.py -q
+```
+
+Po restarcie dashboardu `execute=true` dla
+`zrób zrzut jednego ekranu monitora, na którym jest przeglądarka chrome`
+wygenerował zrzut z DP-2/AOC 4K przez data-flow z inventory:
+`window/query/list(app=chrome) -> window/command/focus -> screen/query/capture`.
+Artefakt miał `monitor=2`, `outputConnector=DP-2`, `scope=monitor`.
 
 ## Domknięcie pętli
 

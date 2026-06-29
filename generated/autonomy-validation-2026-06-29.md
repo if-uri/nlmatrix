@@ -5,11 +5,11 @@ Stan: 2026-06-29.
 ## Wynik
 
 `testing/*` jako harness walidacyjny jest spójny i egzekwuje niezmienniki
-autonomii. Pełny pytest po domknięciu Gen2/Gen7, dodaniu meta-bramy i
-uwzględnieniu obecnych generacji:
+autonomii. Pełny pytest po domknięciu kolejnych generacji, dodaniu meta-bramy i
+uwzględnieniu regresji live:
 
 ```text
-74 passed
+90 passed
 ```
 
 Generator bazowy/offline:
@@ -22,12 +22,16 @@ python3 run.py --json
 Generacje architektoniczne z runnerów:
 
 ```text
-Gen2 data-flow:        6/6
+Gen2 data-flow:        8/8
 Gen3 reversibility:   12/12
 Gen4 state-router:     8/8
 Gen5 cross-target:     9/9
 Gen6 recall-adapt:     7/7
 Gen7 effect-honesty:   9/9
+Gen8 verification:     5/5
+Gen9 preferences:      6/6
+Gen10 idempotence:     4/4
+meta ladder:           9/9
 ```
 
 ## Nowa brama meta
@@ -51,29 +55,34 @@ potwierdzać happy path.
 - Gen5 łapie cichy fallback `node/service -> host`.
 - Gen6 łapie literalny replay recall po zmianie fingerprintu/inwentarza.
 - Gen7 łapie wnioskowanie destrukcyjności z sentymentu NL zamiast z kontraktu.
+- Gen8 łapie `ok:true` bez realnej weryfikacji świata.
+- Gen9 łapie preferencje, które nie są kluczowane fingerprintem środowiska.
+- Gen10 łapie ślepe ponowienie mutacji i duplikaty operacji wykonawczych.
+- Live checker łapie teraz także zdublowany `window/command/focus` w flow.
 - Live smoke no-LLM przez lokalny chat nie łamie niezmienników dla sprawdzonych
-  odpowiedzi:
+  odpowiedzi i nie wykonuje screenshotów w `execute=false`:
 
 ```text
-python3 live_run.py --execute 0 --no-llm --limit 12 --delay 0 --json
-checked=11 passed=3 skipped=1
-needsSelection=3 justified, 8 unjustified
+anchor Chrome:   ok, window/query/list -> focus -> capture(monitor_from), 0 screenshotów w preview
+generic shot:    justified needs-selection, 0 screenshotów w preview
+explicit-2:      ok, typed monitor=2, 0 screenshotów w preview
+all monitors:    ok, typed scope=all, 0 screenshotów w preview
+monitor 99:      env-domain-invalid, allowed=[1,2,3], 0 screenshotów w preview
 ```
 
-Skip to `planner-error` dla jednej parafrazy, nie zaakceptowany błędny wynik.
-Po dodaniu klasyfikacji `needs-selection` gołe screenshoty przy wielu monitorach
-są poprawnymi pytaniami, a anchor „monitor z Chrome” bez rozwiązania przez
-`window/query/list -> capture(monitor_from)` jest defektem autonomii.
+Po dodaniu plannerowego inventory/window-list gołe screenshoty przy wielu
+monitorach są poprawnymi pytaniami, a anchor „monitor z Chrome” przechodzi przez
+`window/query/list -> capture(monitor_from)`.
 
 ## Dwie metryki real-adaptera
 
 Real-adapter bez LLM ma teraz dwie osobne metryki:
 
 ```text
-python3 run.py --real --json
-fixture: 53/108 passed
-portable: 53/86 checked, 22 planner-error skip
-needsSelection: 24 justified, 33 unjustified
+python3 run.py --real --portable
+fixture: 108/108 passed
+portable: 108/108 checked, 0 planner-error skip
+needsSelection: 27 justified, 0 unjustified
 ```
 
 `fixture` porównuje wynik do syntetycznego `env_spec` i jest właściwą miarą dla
@@ -87,25 +96,17 @@ wystarczają, i pytać, gdy nie wystarczają.
 
 ## Co jeszcze nie działa jako pełna autonomia
 
-Strict fixture dla real-adaptera bez LLM nadal pokazuje luki zdolności:
+Funkcjonalne invarianty `testing/*` są zielone, ale live HTTP sweep jest za wolny
+jako codzienna brama. Pełny `testing/live_run.py --execute 0 --no-llm` został
+przerwany po kilku minutach, bo każdy prompt pobiera pełne
+profile/surface/window/browserSessions. To jest bottleneck warstwy środowiska,
+nie aktualna porażka predykatu akceptacji.
 
-Najważniejsze grupy porażek:
-
-| Rodzina | Wynik | Wniosek |
-|---|---:|---|
-| `seed/paraphrase` | 0/9 | frazy typu „monitor, na którym jest Chrome” nie są autonomicznie rozwiązywane do wyniku |
-| `relocate` | 0/9 | ten sam problem po zmianie stanu/inwentarza |
-| `explicit` | 6/18 | część parafraz monitorów jawnych wpada w `needs-selection` albo `reject` |
-| `scope-all` | 2/9 | „wszystkie monitory” nie jest stabilnie rozumiane |
-| `conflict` | 2/9 | konflikt/all-scope nadal zależy od frazy |
-| `oob` | 3/9 | część out-of-bounds kończy jako planner-error/needs-selection zamiast typed reject |
-
-To potwierdza bieżącą diagnozę: sam checker i router-gate mają zęby, ale
-realna ścieżka no-LLM nie ma pełnego pokrycia planowania nad `action_space +
-twin_state`. Dla promptu „zrzut monitora, na którym jest Chrome”
-oczekiwany kierunek to: `window/query/list(app=chrome)` -> `monitor_from` ->
-`screen/query/capture`, a nie pytanie o wybór monitora, jeśli Chrome jest
-jednoznacznie wykryty w inventory/window-list.
+Druga luka jest architektoniczna: no-LLM nadal zawiera leksykalne fallbacki
+(`_SCREENSHOT_KWS`, `_ALL_MONITOR_KWS`, wzorce monitorów) w `urirun_flow`.
+Po tej turze są objęte testami, ale docelowo powinny zostać zastąpione
+deklaratywnymi slotami/intencjami z kontraktów i action_space albo LLM plannerem
+walidowanym tą samą bramą.
 
 `/api/chat/config` zwraca niesekretny model (`LLM_MODEL`/`URIRUN_LLM_MODEL`), a
 frontend pobiera go przed `/api/chat/ask` i wysyła w `model`. Model można podać
@@ -113,21 +114,33 @@ również jawnie: `python3 run.py --real --llm --model openrouter/model ...`.
 Sekrety providera nadal muszą pochodzić ze środowiska procesu. Brak modelu to
 blokada providera, nie wynik bramy akceptacji.
 
-Live smoke LLM po restarcie dashboardu z `openrouter/google/gemini-3.5-flash`
-pokazał `1/3 checked` dla anchorów: jedna fraza dała poprawny wynik
-`monitor=2 · output=DP-2 · scope=monitor · 2160x3840`, dwie nadal wróciły jako
-`needs-selection-unjustified`. Wykonanie `execute=true` dla pierwszej frazy
-wygenerowało artefakt DP-2/4K:
-`/home/tom/.urirun/artifacts/screenshots/urirun-kvm-shot-1680644.png`.
+Nowy pomiar live LLM:
+
+```text
+python3 llm_anchor_distribution.py --runs 1 --limit 1 --json
+checked=1 passed=1 accepted=1 windowAnchorFlow=1 heuristicFallback=1 p50=6.12s
+model=openrouter/google/gemini-3.5-flash
+generatorReason=OpenRouter key limit exceeded
+```
+
+Interpretacja: request poprawnie pobiera model z `/api/chat/config` i wysyła go
+w body z `noLlm=false`, ale provider jest obecnie zablokowany limitem klucza, więc
+system degraduje do heurystyki. To jest poprawne zachowanie fallbacku i zielony
+wynik bramy, ale nadal **nie** jest pomiarem jakości toru LLM. Do decyzji o
+odwróceniu domyślnego planera potrzebny jest przebieg bez `heuristicFallback`.
+
+Aktualne wykonanie `execute=true` dla anchora Chrome wygenerowało artefakt DP-2/4K:
+`/home/tom/.urirun/artifacts/screenshots/urirun-kvm-shot-2105438.png`.
 
 ## Kolejne domknięcia
 
-1. Wpiąć realny `twin://host/env/query/inventory` i domeny env-enum jako wejście
-   do plannera/routera w torze live/no-LLM.
-2. Przenieść rozstrzyganie anchorów typu „monitor z Chrome” do deklaratywnej
-   warstwy routera/data-flow, nie do heurystyk chatu.
-3. Ujednolicić typed reject dla monitorów spoza inwentarza: `monitor-not-in-inventory`,
-   nie `planner-error`.
+1. Dodać cache/budżet czasowy dla plannerowego inventory: osobno szybkie
+   `window/query/list`, osobno cięższe browser/session profile, kluczowane
+   fingerprintem środowiska.
+2. Wyciągnąć leksykalne fallbacki no-LLM do deklaratywnej warstwy slotów/intencji
+   opartej o kontrakty URI; kod ma interpretować deklarację, nie zawierać list fraz.
+3. Przenieść acquisition `planner_environments` z helpera chatu/flow do jawnego
+   URI `twin://host/env/query/inventory` jako jednego read-only kontraktu.
 4. Po ustawieniu `URIRUN_LLM_MODEL`/`LLM_MODEL` albo podaniu `--model` mierzyć
    `--real --llm` jako rozkład coverage po wielu przebiegach: brama musi mieć
    100% na checked, planowanie ma rosnąć statystycznie, nie przez dopisywanie
