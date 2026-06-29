@@ -13,6 +13,7 @@ oracle (run.py).
 
   # 2) bulk logic run, no side effects, throttled:
   python3 live_run.py --execute 0 --delay 0.3
+  python3 live_run.py --execute 0 --model openrouter/model --delay 0.3
 
   # 3) end-to-end subset that actually captures (slower, throttle harder):
   python3 live_run.py --anchor-only --execute 1 --delay 1.0
@@ -63,16 +64,19 @@ def prompt_corpus(args) -> list[dict]:
 
 
 def build_body(prompt: str, targets: list[str], execute: int, discovery: str,
-               no_llm: bool = False) -> dict:
+               no_llm: bool = False, model: str | None = None) -> dict:
     """The chat POST body. VERIFY this against a real submit — field names may
     differ in your build (e.g. 'selectedTargets' vs 'targets')."""
     body = {
         "prompt": prompt,
         "targets": targets,
+        "target_explicit": True,
         "execute": bool(execute),
         "action": "chat:run",
         "no_llm": bool(no_llm),
     }
+    if model and not no_llm:
+        body["model"] = model
     if discovery:
         body["discovery"] = discovery
     return body
@@ -95,6 +99,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--discovery", default="node:lenovo")
     ap.add_argument("--execute", type=int, default=0, help="0=plan+route only, 1=run side effects")
     ap.add_argument("--no-llm", action="store_true", help="send no_llm=true to the chat API")
+    ap.add_argument("--model", default=None, help="send model in the chat request body")
     ap.add_argument("--delay", type=float, default=0.3, help="throttle between prompts (s)")
     ap.add_argument("--timeout", type=float, default=60.0)
     ap.add_argument("--limit", type=int, default=None)
@@ -111,16 +116,17 @@ def main(argv: list[str] | None = None) -> int:
     url = args.base.rstrip("/") + args.endpoint
 
     if args.show_request:
-        body = build_body(cases[0]["intent"], targets, args.execute, args.discovery, args.no_llm)
+        body = build_body(cases[0]["intent"], targets, args.execute, args.discovery, args.no_llm, args.model)
         print("POST", url)
         print(json.dumps(body, ensure_ascii=False, indent=2))
         print(f"\n# {len(cases)} prompts queued. Verify path+body against one real "
               f"submit, then drop --show-request.", file=sys.stderr)
         return 0
 
-    results, passed = [], 0
+    results, passed, skipped = [], 0, 0
+    ns_justified, ns_unjustified = 0, 0
     for i, c in enumerate(cases):
-        body = build_body(c["intent"], targets, args.execute, args.discovery, args.no_llm)
+        body = build_body(c["intent"], targets, args.execute, args.discovery, args.no_llm, args.model)
         try:
             envelope = post_json(url, body, args.timeout)
         except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, ValueError) as e:
@@ -129,27 +135,57 @@ def main(argv: list[str] | None = None) -> int:
             time.sleep(args.delay)
             continue
         a = live_adapt.adapt(envelope)
+        if lp.kind(a) == "planner-error":
+            # The chat never produced a plan (LLM down / rate-limited, fallback disabled).
+            # Record as an infra skip — counting it as a passing "reject" would green-wash an outage.
+            skipped += 1
+            results.append({"intent": c["intent"], "kind": "planner-error", "ok": None,
+                            "skipped": "planner-error", "error_message": a.get("error_message")})
+            if not args.json:
+                print(f"⊘ [{i:03d}] planner-error  {(a.get('error_message') or '')[:46]:46s} {c['intent']}")
+            time.sleep(args.delay)
+            continue
         viol = (lp.check_invariants(a) + lp.check_self_consistency(a)
-                + lp.expected_from_prompt(c, a))
+                + lp.expected_from_prompt(c, a)
+                + lp.check_correlation(c, a, args.no_llm)
+                + lp.check_needs_selection_autonomy(c, a))
         ok = not viol
         passed += ok
+        ns_cls = lp.needs_selection_class(c, a)
+        if ns_cls == "justified":
+            ns_justified += 1
+        elif ns_cls == "unjustified":
+            ns_unjustified += 1
         facts = live_adapt.resolved_facts(a)
         results.append({"intent": c["intent"], "kind": lp.kind(a), "facts": facts,
-                        "ok": ok, "violations": viol})
+                        "ok": ok, "violations": viol, "needsSelectionClass": ns_cls})
         if not args.json:
+            ns_tag = f" [{ns_cls}]" if ns_cls else ""
             mark = "✓" if ok else "✗"
-            print(f"{mark} [{i:03d}] {lp.kind(a):14s} {facts:46s} {c['intent']}")
+            print(f"{mark} [{i:03d}] {lp.kind(a):14s} {facts:46s} {c['intent']}{ns_tag}")
             for x in viol:
                 print(f"        - {x}")
         time.sleep(args.delay)
 
+    checked = len(results) - skipped
     if args.json:
-        print(json.dumps({"total": len(results), "passed": passed, "cases": results},
-                         ensure_ascii=False, indent=2))
+        print(json.dumps({"total": len(results), "checked": checked, "passed": passed,
+                          "skipped": skipped,
+                          "needsSelection": {
+                              "justified": ns_justified,
+                              "unjustified": ns_unjustified,
+                          },
+                          "cases": results}, ensure_ascii=False, indent=2))
     else:
-        print(f"\nRESULT: {passed}/{len(results)} prompts satisfy all live invariants "
-              f"(execute={args.execute})")
-    return 0 if passed == len(results) else 1
+        note = f"; {skipped} skipped (planner/infra error — LLM down?)" if skipped else ""
+        print(f"\nRESULT: {passed}/{checked} checked prompts satisfy all live invariants "
+              f"(execute={args.execute}){note}")
+        if ns_justified or ns_unjustified:
+            print(f"needs-selection: {ns_justified} justified (correct to ask) · "
+                  f"{ns_unjustified} UNJUSTIFIED (intent had an anchor — autonomy gap, drive to 0 "
+                  f"via the LLM planner, not anchor heuristics)")
+    # Green only when something was actually checked and all checks held.
+    return 0 if (checked > 0 and passed == checked) else 1
 
 
 if __name__ == "__main__":

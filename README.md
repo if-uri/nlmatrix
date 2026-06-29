@@ -90,7 +90,9 @@ fixtury zamiast dotykać KVM.
 
 ```bash
 python3 run.py --real          # realny planner no-LLM + real router/env-selection
+python3 run.py --real --portable  # licz tylko live-safe invariants; fixture osobno
 python3 run.py --real --llm    # realny LLM planner, jeśli URIRUN_LLM_MODEL/LLM_MODEL jest ustawiony
+python3 run.py --real --llm --model openrouter/model  # model jawnie w requestcie testowym
 ```
 
 Dwa tryby plannera:
@@ -99,12 +101,39 @@ Dwa tryby plannera:
 - **real** — to, co stress-testujesz. Wariant, w którym planner mis-planuje,
   wychodzi jako naruszenie właściwości, **nie** po cichu „zaliczony".
 
-Stan na 2026-06-29 dla realnego no-LLM toru: `53/108` przypadków spełnia
-niezmienniki. To nie obala bram — oracle i mutanty są zielone — tylko pokazuje
-braki realnego planera bez LLM: parafrazy „monitor z chrome" nie generują
-`window/query/list -> screen/query/capture(monitor_from)`, część wariantów
-„wszystkie monitory" nie ustawia `scope=all`, a niektóre jawne numery monitorów
-nie są rozpoznawane jako wartości domeny.
+Stan na 2026-06-29 dla realnego no-LLM toru ma dwie liczby:
+
+- **fixture oracle:** `53/108` — strict porównanie do syntetycznego `env_spec`;
+- **portable/live-safe:** `53/86 checked`, `22 planner-error skip` — brama,
+  grounding, efekt, korelacja request/response, brak cichego defaultu i
+  klasyfikacja `needs-selection`.
+- **needs-selection:** `24 justified`, `33 unjustified` — goły screenshot przy
+  wielu monitorach może pytać; „monitor z Chrome”, jawny monitor albo `scope=all`
+  nie powinny pytać, tylko rozwiązać/rejectować przez action_space + twin state.
+
+`53/108` nie jest jedną oceną poprawności systemu live, bo miesza fixturę
+syntetyczną (np. chrome na zadanym monitorze, jeden monitor, zapamiętana
+preferencja) z realnym planowaniem. `--portable` liczy warstwę, która ma sens
+na aktualnym środowisku i odróżnia poprawne pytanie od luki autonomii. Różnica
+między tymi liczbami nadal pokazuje realne braki planera bez LLM: parafrazy
+„monitor z chrome" nie generują stabilnie `window/query/list ->
+screen/query/capture(monitor_from)`, część wariantów „wszystkie monitory" nie
+ustawia `scope=all`, a niektóre jawne numery monitorów kończą jako
+`needs-selection` zamiast typed value/reject.
+
+Stan `--real --llm` wymaga skonfigurowanego providera. Model można podać przez
+`URIRUN_LLM_MODEL`/`LLM_MODEL` albo jawnie przez `--model`; dashboard dodatkowo
+eksponuje niesekretny `/api/chat/config`, a frontend pobiera go przed requestem.
+Sekrety providera (np. API key) nadal muszą być w środowisku procesu. Brak modelu
+jest raportowany jako `planner-error` skip — to precondition providera, nie
+zielony ani czerwony wynik architektury.
+
+Po restarcie dashboardu i jawnie podanym modelu `openrouter/google/gemini-3.5-flash`
+mały live smoke anchorów dał `1/3 checked`: jedna fraza rozwiązała się do
+`monitor=2 · output=DP-2 · scope=monitor · 2160x3840`, dwie nadal wróciły jako
+`needs-selection-unjustified`. To znaczy: tor LLM umie już wygenerować właściwy
+data-flow, ale coverage jest rozkładem do mierzenia, nie stałą gwarancją jednej
+próby.
 
 ## Domknięcie pętli
 

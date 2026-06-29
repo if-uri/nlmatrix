@@ -5,6 +5,7 @@
   python3 run.py --list          # just print every generated NL line
   python3 run.py --json          # machine-readable per-case results
   python3 run.py --real          # run against the installed urirun (seam below)
+  python3 run.py --real --portable  # gate on live-safe invariants, report fixture separately
   python3 run.py --mr relocate   # only one metamorphic family
 
 Default executor is the reference oracle (twin_registry_sim). The point of the
@@ -15,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -102,14 +104,23 @@ class _Memory:
 
 
 def _planner_environments(env: dict, inventory: dict) -> list[dict]:
+    windows = []
+    if env.get("chrome_on_monitor") is not None:
+        windows.append({
+            "app": "Google Chrome",
+            "title": "Google Chrome",
+            "monitor": env.get("chrome_on_monitor"),
+        })
     return [{
         "node": "host",
         "inventory": inventory,
         "domains": inventory.get("domains") or {},
+        "windows": windows,
         "profile": {
             "platform": "linux-wayland",
             "best": "cdp" if env.get("cdp_endpoints") else "screen",
             "monitors": env.get("monitors") or [],
+            "windows": windows,
             "cdp": {"reachable": bool(env.get("cdp_endpoints"))},
         },
     }]
@@ -202,6 +213,7 @@ def _result_envelope(flow: dict, env: dict, acceptance: dict, inventory: dict) -
 def _planner_error_envelope(error: Exception, inventory: dict) -> dict:
     return {
         "ok": False,
+        "planner_error": True,
         "error": f"{type(error).__name__}: {error}",
         "routing": {
             "accepted": False,
@@ -214,7 +226,7 @@ def _planner_error_envelope(error: Exception, inventory: dict) -> dict:
     }
 
 
-def run_real(case: dict, *, use_llm: bool = False):
+def run_real(case: dict, *, use_llm: bool = False, llm_model: str | None = None):
     """Seam: run one case against the installed urirun planner + router accept.
 
     This is intentionally non-destructive: it runs the real planner, the real
@@ -241,6 +253,7 @@ def run_real(case: dict, *, use_llm: bool = False):
             selected_nodes=["host"],
             use_llm=use_llm,
             environments=_planner_environments(env, inventory),
+            llm_model=llm_model,
         )
     except Exception as exc:  # noqa: BLE001
         return _planner_error_envelope(exc, inventory), env
@@ -268,8 +281,19 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--json", action="store_true", help="machine-readable output")
     ap.add_argument("--real", action="store_true", help="run against installed urirun")
     ap.add_argument("--llm", action="store_true", help="with --real, use the LLM planner")
+    ap.add_argument("--model", default=None, help="with --real --llm, pass this model in the planner request")
+    ap.add_argument("--portable", action="store_true",
+                    help="with --real, pass/fail on env-portable invariants and count fixture separately")
     ap.add_argument("--mr", default=None, help="filter to one metamorphic family tag")
     args = ap.parse_args(argv)
+
+    # Honest LLM-track measurement: force STRICT planner so an LLM outage is a loud planner-error
+    # (recorded as a skip), NOT a silent degrade to the heuristic — otherwise the "LLM track"
+    # number would be contaminated with heuristic results and overstate LLM autonomy.
+    if args.real and args.llm:
+        os.environ["URIRUN_STRICT_LLM_PLANNER"] = "1"
+        if args.model:
+            os.environ.setdefault("URIRUN_LLM_MODEL", args.model)
 
     cases = transforms.expand()
     if args.mr:
@@ -282,40 +306,93 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     def executor(case: dict):
-        return run_real(case, use_llm=args.llm) if args.real else sim.run_case_reference(case)
-    results, passed = [], 0
+        return run_real(case, use_llm=args.llm, llm_model=args.model) if args.real else sim.run_case_reference(case)
+    results = []
+    fixture_passed = 0
+    portable_passed = 0
+    portable_checked = 0
+    portable_skipped = 0
+    ns_justified = 0
+    ns_unjustified = 0
     for c in cases:
         try:
             envelope, env_state = executor(c)
-            viol = properties.check(c, env_state, envelope)
+            fixture_viol = properties.check(c, env_state, envelope)
+            portable_viol = properties.check_portable(c, env_state, envelope)
         except NotImplementedError as e:
             print(str(e), file=sys.stderr)
             return 2
-        ok = not viol
-        passed += ok
+        fixture_ok = not fixture_viol
+        fixture_passed += fixture_ok
+        skipped = bool(args.real and properties.is_planner_error(envelope))
+        if skipped:
+            portable_skipped += 1
+        else:
+            portable_checked += 1
+            portable_passed += not portable_viol
+            ns_cls = properties.needs_selection_class(c, env_state, envelope)
+            if ns_cls == "justified":
+                ns_justified += 1
+            elif ns_cls == "unjustified":
+                ns_unjustified += 1
+        ok = (not portable_viol and not skipped) if args.portable else fixture_ok
         results.append({"id": c["id"], "mr": c["mr"], "intent": c["intent"],
-                        "expect": c["expect"]["kind"], "ok": ok, "violations": viol})
+                        "expect": c["expect"]["kind"],
+                        "ok": ok,
+                        "fixture_ok": fixture_ok,
+                        "fixture_violations": fixture_viol,
+                        "portable_ok": (None if skipped else not portable_viol),
+                        "portable_violations": portable_viol,
+                        "portable_skipped": skipped,
+                        "needsSelectionClass": None if skipped else properties.needs_selection_class(c, env_state, envelope)})
 
     if args.json:
-        print(json.dumps({"total": len(cases), "passed": passed, "cases": results}, indent=2))
-        return 0 if passed == len(cases) else 1
+        summary = {
+            "total": len(cases),
+            "mode": "portable" if args.portable else "fixture",
+            "passed": portable_passed if args.portable else fixture_passed,
+            "fixture": {"passed": fixture_passed, "total": len(cases)},
+            "portable": {"passed": portable_passed, "checked": portable_checked,
+                         "skipped": portable_skipped, "total": len(cases)},
+            "needsSelection": {
+                "justified": ns_justified,
+                "unjustified": ns_unjustified,
+            },
+            "cases": results,
+        }
+        print(json.dumps(summary, indent=2))
+        if args.portable:
+            return 0 if portable_passed == portable_checked else 1
+        return 0 if fixture_passed == len(cases) else 1
 
     by_mr: dict[str, list[int]] = {}
     for r in results:
-        agg = by_mr.setdefault(r["mr"], [0, 0])
-        agg[0] += r["ok"]
+        agg = by_mr.setdefault(r["mr"], [0, 0, 0, 0])
+        agg[0] += bool(r["fixture_ok"])
         agg[1] += 1
+        agg[2] += bool(r["portable_ok"])
+        agg[3] += 0 if r["portable_skipped"] else 1
     for r in results:
         if not r["ok"]:
             print(f"✗ {r['id']:24s} {r['intent']}")
-            for x in r["violations"]:
+            key = "portable_violations" if args.portable else "fixture_violations"
+            if args.portable and r["portable_skipped"]:
+                print("      - skipped: planner-error")
+            for x in r[key]:
                 print(f"      - {x}")
-    print("\nMetamorphic family               pass/total")
-    for mr, (p, t) in sorted(by_mr.items()):
-        mark = "✓" if p == t else "✗"
-        print(f"  {mark} {mr:30s} {p}/{t}")
-    print(f"\nRESULT: {passed}/{len(cases)} NL cases satisfy all invariants")
-    return 0 if passed == len(cases) else 1
+    print("\nMetamorphic family               fixture     portable")
+    for mr, (fp, total, pp, checked) in sorted(by_mr.items()):
+        fmark = "✓" if fp == total else "✗"
+        pmark = "✓" if pp == checked else "✗"
+        print(f"  {mr:30s} {fmark} {fp}/{total:<3d}   {pmark} {pp}/{checked:<3d}")
+    print(f"\nFIXTURE RESULT:  {fixture_passed}/{len(cases)} NL cases satisfy synthetic oracle")
+    print(f"PORTABLE RESULT: {portable_passed}/{portable_checked} checked "
+          f"({portable_skipped} planner-error skip)")
+    if ns_justified or ns_unjustified:
+        print(f"NEEDS-SELECTION: {ns_justified} justified · {ns_unjustified} unjustified")
+    if args.portable:
+        return 0 if portable_passed == portable_checked else 1
+    return 0 if fixture_passed == len(cases) else 1
 
 
 if __name__ == "__main__":

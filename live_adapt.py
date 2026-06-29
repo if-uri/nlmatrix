@@ -71,6 +71,27 @@ def adapt(envelope: dict) -> dict:
         sel = (wl.get("result", {}) or {}).get("selected", {}) or {}
         out["selected_window_monitor"] = sel.get("monitor")
 
+    # Planner/infra failure is NOT a gate reject: the chat never produced a plan to judge
+    # (e.g. the LLM is rate-limited and heuristic fallback is disabled). Surface it so the
+    # harness records it as an infra skip instead of green-washing it as a passing "reject".
+    err = envelope.get("error") or {}
+    gen = envelope.get("generator") or {}
+    recovery = envelope.get("recovery") or []
+    out["planner_error"] = bool(
+        envelope.get("ok") is False and (
+            gen.get("intent") == "planner-recovery"
+            or "planner failed" in str(err.get("message") or "").lower()
+            or any("planner/command/make" in str((r or {}).get("uri") or "") for r in recovery)
+        )
+    )
+    out["error_message"] = str(err.get("message") or "")[:120] if out["planner_error"] else ""
+
+    # Correlation honesty: the response must echo THIS request's prompt (a request<->response
+    # leak would attribute an answer to the wrong intent). noLlm is surfaced too — currently the
+    # envelope does NOT echo it, so the checker records (does not assert) when it is absent.
+    out["response_prompt"] = envelope.get("prompt")
+    out["response_noLlm"] = envelope.get("noLlm", envelope.get("no_llm"))
+
     return out
 
 

@@ -18,6 +18,8 @@ def _inventory_ids(adapted):
 
 
 def kind(adapted):
+    if adapted.get("planner_error"):
+        return "planner-error"
     if adapted.get("needsSelection"):
         return "needs-selection"
     if not adapted.get("routing", {}).get("accepted", False):
@@ -92,6 +94,58 @@ def check_self_consistency(adapted) -> list[str]:
             v.append(f"anchor: captured monitor {cap.get('monitor')} "
                      f"!= selected window monitor {sel}")
     return v
+
+
+def check_correlation(prompt_meta, adapted, request_no_llm) -> list[str]:
+    """Correlation honesty: the response must be the answer to THIS request.
+
+    Asserts ``response.prompt == request.prompt`` — a mismatch means a response was bound to the
+    wrong request (a correlation-id leak, not a UI cosmetic). ``noLlm`` is only asserted when the
+    envelope actually echoes it; today it does not, so an absent value is recorded, not failed
+    (record-don't-assert) — the gap itself is that the resolved mode is not verifiable from the
+    response, which is an urirun-side improvement, not a test failure."""
+    v: list[str] = []
+    req = str(prompt_meta.get("intent") or "").strip()
+    resp = adapted.get("response_prompt")
+    if resp is not None and str(resp).strip() != req:
+        v.append(f"correlation: response.prompt {str(resp).strip()!r} != request {req!r} "
+                 f"(answer bound to the wrong request)")
+    rnl = adapted.get("response_noLlm")
+    if rnl is not None and bool(rnl) != bool(request_no_llm):
+        v.append(f"correlation: response.noLlm {rnl} != request {request_no_llm}")
+    return v
+
+
+def needs_selection_class(prompt_meta, adapted) -> "str | None":
+    """Classify a needs-selection as 'justified' or 'unjustified' (or None when not a selection).
+
+    Autonomy is: resolve when intent + state suffice; ASK when they do not. So not every
+    needs-selection is a defect:
+
+    * justified  — the intent carries no disambiguating info (bare 'screenshot' with >1 monitor and
+      no stored preference). Asking is correct; silently picking a monitor here is a regression.
+    * unjustified — the intent anchors on an app/window the user named ('the monitor with chrome')
+      which uniquely determines the monitor, but the planner asked instead of resolving it via
+      window/query/list -> capture(monitor_from). ONLY this is a defect / the autonomy gap.
+
+    The unjustified count is the target to drive DOWN via the LLM planner (which reads action_space
+    and derives the window-list step), not via hard-coding anchor phrases."""
+    if kind(adapted) != "needs-selection":
+        return None
+    anchored = (prompt_meta.get("phrasing") == "anchor"
+                or bool((prompt_meta.get("plan_hint") or {}).get("anchor"))
+                or bool(prompt_meta.get("anchor")))
+    return "unjustified" if anchored else "justified"
+
+
+def check_needs_selection_autonomy(prompt_meta, adapted) -> list[str]:
+    cls = needs_selection_class(prompt_meta, adapted)
+    if cls != "unjustified":
+        return []
+    return [
+        "needs-selection-unjustified: intent had an anchor; planner should resolve "
+        "with state/action_space before asking"
+    ]
 
 
 def expected_from_prompt(prompt_meta, adapted) -> list[str]:

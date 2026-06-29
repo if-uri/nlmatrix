@@ -73,6 +73,37 @@ def test_mutant_silent_default_on_ambiguous_is_caught():
     assert viol, "expected needs-selection; silent monitor=0 must violate"
 
 
+def test_unjustified_needs_selection_is_caught_when_anchor_is_resolvable():
+    c = _seed_case()
+    env = sim.make_env(**c["env_spec"])
+    bad = {
+        "ok": False,
+        "needsSelection": {
+            "parameter": "monitor",
+            "domain": "env:monitors.id",
+            "options": [{"value": m["id"], "label": m["connector"]} for m in env["monitors"]],
+            "reason": "ambiguous-monitor",
+        },
+        "routing": {"accepted": True, "blockedSteps": [], "violations": [],
+                    "steps": [{"uri": "kvm://host/screen/query/capture", "ok": True,
+                               "effect": "query", "safe": True, "contract_effect": "query"}]},
+        "results": {},
+        "twin_inventory": sim._inventory_block(env),
+    }
+
+    viol = properties.check_portable(c, env, bad)
+
+    assert any("needs-selection-unjustified" in x for x in viol)
+
+
+def test_anchor_closed_needs_selection_is_justified():
+    c = next(c for c in transforms.expand() if c["id"].startswith("anchor-closed"))
+    envelope, env = sim.run_case_reference(c)
+
+    assert properties.needs_selection_class(c, env, envelope) == "justified"
+    assert not any("needs-selection-unjustified" in x for x in properties.check_portable(c, env, envelope))
+
+
 def test_mutant_preference_leak_across_fingerprint_is_caught():
     c = next(c for c in transforms.expand() if c["id"].startswith("fp-guard"))
     env = sim.make_env(**c["env_spec"])

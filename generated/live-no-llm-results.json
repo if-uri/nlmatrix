@@ -1,0 +1,384 @@
+{
+  "total": 54,
+  "passed": 54,
+  "cases": [
+    {
+      "intent": "zrób zrzut ekranu monitora, na którym jest chrome",
+      "kind": "needs-selection",
+      "facts": "needs-selection (choose)",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "screenshot tego monitora gdzie mam otwartego chrome",
+      "kind": "needs-selection",
+      "facts": "needs-selection (choose)",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "przechwyć ekran z przeglądarką chrome",
+      "kind": "needs-selection",
+      "facts": "needs-selection (choose)",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "zrzut monitora z chrome",
+      "kind": "needs-selection",
+      "facts": "needs-selection (choose)",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "zrób screena tego ekranu gdzie jest google chrome",
+      "kind": "needs-selection",
+      "facts": "needs-selection (choose)",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "capture the monitor showing chrome",
+      "kind": "needs-selection",
+      "facts": "needs-selection (choose)",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "pokaż zrzut ekranu z chrome",
+      "kind": "needs-selection",
+      "facts": "needs-selection (choose)",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "zrzutuj monitor na którym wyświetla się chrome",
+      "kind": "reject",
+      "facts": "reject: []",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "zrób fotkę ekranu z otwartym chrome",
+      "kind": "needs-selection",
+      "facts": "needs-selection (choose)",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "zrób zrzut ekranu",
+      "kind": "needs-selection",
+      "facts": "needs-selection (choose)",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "zrzut ekranu",
+      "kind": "needs-selection",
+      "facts": "needs-selection (choose)",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "screenshot",
+      "kind": "needs-selection",
+      "facts": "needs-selection (choose)",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "przechwyć ekran",
+      "kind": "needs-selection",
+      "facts": "needs-selection (choose)",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "zrób screena",
+      "kind": "reject",
+      "facts": "reject: []",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "pokaż zrzut ekranu",
+      "kind": "needs-selection",
+      "facts": "needs-selection (choose)",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "zrzutuj ekran",
+      "kind": "needs-selection",
+      "facts": "needs-selection (choose)",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "zrób print screen",
+      "kind": "needs-selection",
+      "facts": "needs-selection (choose)",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "capture the screen",
+      "kind": "needs-selection",
+      "facts": "needs-selection (choose)",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "zrób zrzut monitora 2",
+      "kind": "result",
+      "facts": "monitor=2 · output=DP-2 · scope=monitor · 2160x3840",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "screenshot monitora 2",
+      "kind": "result",
+      "facts": "monitor=2 · output=DP-2 · scope=monitor · 2160x3840",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "przechwyć monitor numer 2",
+      "kind": "reject",
+      "facts": "reject: []",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "zrzut ekranu 2",
+      "kind": "needs-selection",
+      "facts": "needs-selection (choose)",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "zrób screena monitora 2",
+      "kind": "reject",
+      "facts": "reject: []",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "pokaż zrzut monitora 2",
+      "kind": "result",
+      "facts": "monitor=2 · output=DP-2 · scope=monitor · 2160x3840",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "zrzutuj monitor 2",
+      "kind": "reject",
+      "facts": "reject: []",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "capture monitor 2",
+      "kind": "needs-selection",
+      "facts": "needs-selection (choose)",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "ekran 2 zrzut",
+      "kind": "needs-selection",
+      "facts": "needs-selection (choose)",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "zrób zrzut monitora 1",
+      "kind": "result",
+      "facts": "monitor=1 · output=HDMI-1 · scope=monitor · 2560x1600",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "screenshot monitora 1",
+      "kind": "result",
+      "facts": "monitor=1 · output=HDMI-1 · scope=monitor · 2560x1600",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "przechwyć monitor numer 1",
+      "kind": "reject",
+      "facts": "reject: []",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "zrzut ekranu 1",
+      "kind": "needs-selection",
+      "facts": "needs-selection (choose)",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "zrób screena monitora 1",
+      "kind": "reject",
+      "facts": "reject: []",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "pokaż zrzut monitora 1",
+      "kind": "result",
+      "facts": "monitor=1 · output=HDMI-1 · scope=monitor · 2560x1600",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "zrzutuj monitor 1",
+      "kind": "reject",
+      "facts": "reject: []",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "capture monitor 1",
+      "kind": "needs-selection",
+      "facts": "needs-selection (choose)",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "ekran 1 zrzut",
+      "kind": "needs-selection",
+      "facts": "needs-selection (choose)",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "zrób zrzut wszystkich monitorów",
+      "kind": "result",
+      "facts": "monitor=-1 · scope=all-monitors · 7360x3611",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "screenshot wszystkich ekranów",
+      "kind": "needs-selection",
+      "facts": "needs-selection (choose)",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "przechwyć wszystkie monitory",
+      "kind": "reject",
+      "facts": "reject: []",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "zrzut całego pulpitu",
+      "kind": "needs-selection",
+      "facts": "needs-selection (choose)",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "zrób screena wszystkich ekranów",
+      "kind": "needs-selection",
+      "facts": "needs-selection (choose)",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "pokaż wszystkie monitory",
+      "kind": "reject",
+      "facts": "reject: []",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "zrzutuj cały desktop",
+      "kind": "reject",
+      "facts": "reject: []",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "capture all monitors",
+      "kind": "needs-selection",
+      "facts": "needs-selection (choose)",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "wszystkie ekrany zrzut",
+      "kind": "result",
+      "facts": "monitor=-1 · scope=all-monitors · 7360x3611",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "zrób zrzut monitora 9",
+      "kind": "reject",
+      "facts": "reject: []",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "screenshot monitora 9",
+      "kind": "reject",
+      "facts": "reject: []",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "przechwyć monitor numer 9",
+      "kind": "reject",
+      "facts": "reject: []",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "zrzut ekranu 9",
+      "kind": "needs-selection",
+      "facts": "needs-selection (choose)",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "zrób screena monitora 9",
+      "kind": "reject",
+      "facts": "reject: []",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "pokaż zrzut monitora 9",
+      "kind": "reject",
+      "facts": "reject: []",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "zrzutuj monitor 9",
+      "kind": "reject",
+      "facts": "reject: []",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "capture monitor 9",
+      "kind": "needs-selection",
+      "facts": "needs-selection (choose)",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "intent": "ekran 9 zrzut",
+      "kind": "needs-selection",
+      "facts": "needs-selection (choose)",
+      "ok": true,
+      "violations": []
+    }
+  ]
+}

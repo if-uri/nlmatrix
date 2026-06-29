@@ -68,3 +68,72 @@ def test_mutant_dataflow_missing_dependency_caught():
     env["flow"]["steps"][1]["depends_on"] = []  # ref without depends_on
     a = live_adapt.adapt(env)
     assert any("dataflow" in x for x in lp.check_invariants(a))
+
+
+def test_correlation_prompt_and_no_llm_are_asserted_when_echoed():
+    env = _load()
+    env["prompt"] = "jaka jest dzisiaj data"
+    env["noLlm"] = False
+
+    a = live_adapt.adapt(env)
+    viol = lp.check_correlation(
+        {"intent": "zrób zrzut ekranu"},
+        a,
+        request_no_llm=True,
+    )
+
+    assert any("response.prompt" in x for x in viol)
+    assert any("response.noLlm" in x for x in viol)
+
+
+def test_anchor_needs_selection_is_unjustified_live_gap():
+    env = {
+        "ok": False,
+        "prompt": "zrób zrzut ekranu monitora, na którym jest chrome",
+        "noLlm": True,
+        "needsSelection": {
+            "parameter": "monitor",
+            "domain": "env:monitors.id",
+            "options": [{"value": 1}, {"value": 2}, {"value": 3}],
+            "reason": "ambiguous-monitor",
+        },
+        "routing": {"accepted": True, "blockedSteps": [], "violations": [], "steps": []},
+        "results": {
+            "twin:inventory:host": {
+                "domains": {"env:monitors.id": [{"value": 1}, {"value": 2}, {"value": 3}]},
+                "monitors": [{"id": 1}, {"id": 2}, {"id": 3}],
+            },
+        },
+    }
+
+    a = live_adapt.adapt(env)
+
+    assert lp.needs_selection_class({"phrasing": "anchor"}, a) == "unjustified"
+    assert any("needs-selection-unjustified" in x
+               for x in lp.check_needs_selection_autonomy({"phrasing": "anchor"}, a))
+
+
+def test_generic_needs_selection_is_justified_live_prompt():
+    env = {
+        "ok": False,
+        "prompt": "zrób zrzut ekranu",
+        "noLlm": True,
+        "needsSelection": {
+            "parameter": "monitor",
+            "domain": "env:monitors.id",
+            "options": [{"value": 1}, {"value": 2}, {"value": 3}],
+            "reason": "ambiguous-monitor",
+        },
+        "routing": {"accepted": True, "blockedSteps": [], "violations": [], "steps": []},
+        "results": {
+            "twin:inventory:host": {
+                "domains": {"env:monitors.id": [{"value": 1}, {"value": 2}, {"value": 3}]},
+                "monitors": [{"id": 1}, {"id": 2}, {"id": 3}],
+            },
+        },
+    }
+
+    a = live_adapt.adapt(env)
+
+    assert lp.needs_selection_class({"phrasing": "generic"}, a) == "justified"
+    assert lp.check_needs_selection_autonomy({"phrasing": "generic"}, a) == []

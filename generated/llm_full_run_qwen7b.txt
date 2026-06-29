@@ -1,0 +1,17 @@
+
+Metamorphic family               fixture     portable
+  ambiguous                      ✗ 0/9     ✓ 9/9  
+  conflict                       ✗ 0/9     ✓ 9/9  
+  explicit                       ✗ 17/18    ✓ 18/18 
+  no-anchor                      ✗ 0/9     ✓ 9/9  
+  oob                            ✗ 4/9     ✓ 9/9  
+  relocate                       ✗ 5/9     ✓ 9/9  
+  remember                       ✗ 0/9     ✓ 9/9  
+  remember/fp-guard              ✗ 0/9     ✓ 9/9  
+  scope-all                      ✗ 0/9     ✓ 9/9  
+  seed/paraphrase                ✗ 5/9     ✓ 9/9  
+  shrink                         ✓ 9/9     ✓ 9/9  
+
+FIXTURE RESULT:  40/108 NL cases satisfy synthetic oracle
+PORTABLE RESULT: 108/108 checked (0 planner-error skip)
+exit: 0  (811s)
