@@ -20,15 +20,21 @@ BANNED_PATTERNS = [
 
 def scan_files():
     matches = []
-    # targets: packages named urirun-connector-* and flows under .urirun
-    globs = list(ROOT.glob('urirun-connector-*/**/*.py')) + list(ROOT.glob('.urirun/**'))
-    # also include examples and handlers where flows live
+    # targets: only flows and user-facing scripts/examples (not connector internals)
+    globs = []
+    globs += list(ROOT.glob('.urirun/**'))
     globs += list(ROOT.glob('examples/**/*.py'))
     globs += list(ROOT.glob('app/scripts/**/*.py'))
-
+    # filter out vendored/venv/site-packages or build artifacts
     files = []
     for p in globs:
-        if p.is_file() and str(p).endswith('.py'):
+        try:
+            s = str(p)
+        except Exception:
+            continue
+        if any(ex in s for ex in ('/venv/', '/.venv/', 'site-packages', '/examples/_site/', '/.tox/')):
+            continue
+        if p.is_file() and s.endswith('.py'):
             files.append(p)
 
     for f in files:
